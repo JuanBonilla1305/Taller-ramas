@@ -4,6 +4,10 @@ on:
   push:
   workflow_dispatch:
 
+concurrency:
+  group: grader-${{ github.repository }}
+  cancel-in-progress: false
+
 permissions:
   issues: write
   contents: read

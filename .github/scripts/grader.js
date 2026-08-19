@@ -325,7 +325,10 @@ module.exports = async ({ github, context, core }) => {
     const { data: issuesConLabel } = await github.rest.issues.listForRepo({
       owner, repo, labels: labelPaso, state: 'all', per_page: 10,
     });
-    const issue = issuesConLabel.find((i) => !i.pull_request);
+    const candidatas = issuesConLabel.filter((i) => !i.pull_request);
+    // Si un run concurrente dejó un duplicado, preferimos el que sigue abierto
+    // (el que de verdad necesita seguimiento) sobre el mas reciente.
+    const issue = candidatas.find((i) => i.state === 'open') || candidatas[0];
     const prerequisitosCompletos = paso.requiere.every((id) => estado[id] && estado[id].completo);
 
     if (ev.completo) {
