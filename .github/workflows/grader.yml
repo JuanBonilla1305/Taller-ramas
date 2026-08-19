@@ -1,0 +1,28 @@
+name: Taller - Validar arbol de commits
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  grader:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Traer todas las ramas remotas
+        run: git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune
+
+      - name: Evaluar progreso del taller
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const grader = require('./.github/scripts/grader.js');
+            await grader({ github, context, core });

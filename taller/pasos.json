@@ -1,0 +1,60 @@
+{
+  "$schema": "Definición de pasos del taller de árboles de commits. No editar los ids ni los nombres de rama: el workflow y el visualizador dependen de que coincidan.",
+  "pasos": [
+    {
+      "id": "main-setup",
+      "rama": "main",
+      "ramaBase": null,
+      "commitsMinimos": 2,
+      "palabraClave": "base",
+      "tiposPermitidos": ["chore", "docs"],
+      "requiere": [],
+      "tituloIssue": "Paso 1 — Base del proyecto en main",
+      "cuerpoIssue": "## Objetivo de este paso\n\nDejar la rama `main` con la base del proyecto, usando **dos commits reales** (no genéricos).\n\n### Instrucciones de git (NO se pide código de la página aquí, eso lo decides tú)\n\n1. Asegúrate de estar en `main`:\n   ```\n   git checkout main\n   ```\n2. Crea (o edita) los archivos base de tu página con contenido real de lo que vas a construir. Cuando tengas ese primer avance, haz un commit tipo `chore` que incluya la palabra clave **base**. Ejemplo de formato (no copies el texto, descríbelo con tus propias palabras):\n   ```\n   git add .\n   git commit -m \"chore(setup): base del proyecto — estructura inicial de <tu-idea-de-pagina>\"\n   ```\n3. Edita el `README.md` con una descripción real de tu proyecto (qué es, para qué sirve, qué secciones tendrá) y haz un segundo commit tipo `docs`, incluyendo también la palabra clave **base**:\n   ```\n   git add README.md\n   git commit -m \"docs(readme): base de la documentación del proyecto <tu-idea>\"\n   ```\n4. Sube los cambios:\n   ```\n   git push origin main\n   ```\n\n### Reglas de mensaje de commit (se validan automáticamente)\n- Formato: `tipo(alcance opcional): descripción`\n- Tipos permitidos aquí: `chore`, `docs`\n- Debe contener la palabra **base**\n- Mínimo 20 caracteres de descripción real, nada de \"update\", \"cambios\", \"wip\", etc.\n- Los dos commits no pueden tener el mismo mensaje.\n\nCuando ambos commits sean válidos y estén en `main`, este issue se cierra solo y se abren los del siguiente paso."
+    },
+    {
+      "id": "estructura-html",
+      "rama": "feature/estructura-html",
+      "ramaBase": "main",
+      "commitsMinimos": 2,
+      "palabraClave": "estructura",
+      "tiposPermitidos": ["feat"],
+      "requiere": ["main-setup"],
+      "tituloIssue": "Paso 2 — Rama feature/estructura-html",
+      "cuerpoIssue": "## Objetivo de este paso\n\nCrear la rama `feature/estructura-html` desde `main` y avanzar la estructura de tu página con **dos commits reales**.\n\n### Instrucciones de git\n\n1. Parado en `main` (ya con el paso 1 hecho), crea la rama:\n   ```\n   git checkout -b feature/estructura-html\n   ```\n2. Agrega contenido real a la estructura de tu página (las secciones que quieras: encabezado, contenido principal, lo que sea de tu idea). Haz un commit tipo `feat` que incluya la palabra clave **estructura**:\n   ```\n   git add .\n   git commit -m \"feat(estructura): agrega <describe qué sección agregaste> — estructura\"\n   ```\n3. Sigue avanzando contenido real y haz un segundo commit `feat`, también con la palabra **estructura**, describiendo lo nuevo (debe ser un cambio distinto al anterior, no repitas el mismo mensaje).\n4. Sube la rama:\n   ```\n   git push origin feature/estructura-html\n   ```\n\n### Reglas de mensaje de commit\n- Tipo permitido aquí: `feat`\n- Debe contener la palabra **estructura**\n- Mínimo 20 caracteres de descripción real\n- Los commits no pueden repetirse entre sí\n\n**No hagas merge ni Pull Request de esta rama.** Se queda así, divergente de `main`, para que el árbol de commits quede bien definido.\n\nAl completar este paso se desbloquea el paso de `feature/seccion-formulario` (que nace de esta rama)."
+    },
+    {
+      "id": "estilos-css",
+      "rama": "feature/estilos-css",
+      "ramaBase": "main",
+      "commitsMinimos": 3,
+      "palabraClave": "estilos",
+      "tiposPermitidos": ["feat", "style"],
+      "requiere": ["main-setup"],
+      "tituloIssue": "Paso 3 — Rama feature/estilos-css",
+      "cuerpoIssue": "## Objetivo de este paso\n\nCrear la rama `feature/estilos-css` desde `main` y avanzar el diseño visual con **tres commits reales**.\n\n### Instrucciones de git\n\n1. Parado en `main`, crea la rama:\n   ```\n   git checkout main\n   git checkout -b feature/estilos-css\n   ```\n2. Haz tres commits (tipo `feat` o `style`) trabajando en el diseño visual real de tu página. Cada mensaje debe incluir la palabra clave **estilos** y describir un cambio distinto de verdad, por ejemplo:\n   ```\n   git commit -m \"style(estilos): define la paleta de colores y tipografía\"\n   git commit -m \"feat(estilos): estilos del <sección concreta de tu página>\"\n   git commit -m \"style(estilos): ajusta espaciado y responsive de <parte concreta>\"\n   ```\n   (usa tus propias descripciones reales, no copies literal el ejemplo)\n3. Sube la rama:\n   ```\n   git push origin feature/estilos-css\n   ```\n\n### Reglas de mensaje de commit\n- Tipos permitidos: `feat`, `style`\n- Debe contener la palabra **estilos**\n- Mínimo 20 caracteres de descripción real por commit\n- Ningún commit puede repetir el mensaje de otro\n\n**No hagas merge ni Pull Request de esta rama.**"
+    },
+    {
+      "id": "interactividad-js",
+      "rama": "feature/interactividad-js",
+      "ramaBase": "main",
+      "commitsMinimos": 3,
+      "palabraClave": "interactividad",
+      "tiposPermitidos": ["feat", "fix"],
+      "requiere": ["main-setup"],
+      "tituloIssue": "Paso 4 — Rama feature/interactividad-js",
+      "cuerpoIssue": "## Objetivo de este paso\n\nCrear la rama `feature/interactividad-js` desde `main` y avanzar la interactividad (JavaScript real, no un alert de saludo) con **tres commits reales**.\n\n### Instrucciones de git\n\n1. Parado en `main`, crea la rama:\n   ```\n   git checkout main\n   git checkout -b feature/interactividad-js\n   ```\n2. Haz tres commits (`feat`, o `fix` si estás corrigiendo algo que ya escribiste en esta misma rama) agregando comportamiento real a tu página. Cada mensaje debe incluir la palabra clave **interactividad**:\n   ```\n   git commit -m \"feat(interactividad): agrega <comportamiento concreto>\"\n   git commit -m \"feat(interactividad): agrega <otro comportamiento concreto>\"\n   git commit -m \"fix(interactividad): corrige <detalle concreto que arreglaste>\"\n   ```\n3. Sube la rama:\n   ```\n   git push origin feature/interactividad-js\n   ```\n\n### Reglas de mensaje de commit\n- Tipos permitidos: `feat`, `fix`\n- Debe contener la palabra **interactividad**\n- Mínimo 20 caracteres de descripción real por commit\n- Ningún commit puede repetir el mensaje de otro\n\n**No hagas merge ni Pull Request de esta rama.**"
+    },
+    {
+      "id": "seccion-formulario",
+      "rama": "feature/seccion-formulario",
+      "ramaBase": "feature/estructura-html",
+      "commitsMinimos": 2,
+      "palabraClave": "formulario",
+      "tiposPermitidos": ["feat"],
+      "requiere": ["estructura-html"],
+      "tituloIssue": "Paso 5 — Rama feature/seccion-formulario (nace de otra rama, no de main)",
+      "cuerpoIssue": "## Objetivo de este paso\n\nEsta rama nace de **`feature/estructura-html`**, no de `main` — así se practica crear una rama a partir de otra rama. Necesitas **dos commits reales**.\n\n### Instrucciones de git\n\n1. Parado en `feature/estructura-html` (con el paso 2 ya hecho):\n   ```\n   git checkout feature/estructura-html\n   git checkout -b feature/seccion-formulario\n   ```\n2. Agrega contenido real relacionado con algún tipo de formulario o interacción del usuario en tu página, con dos commits `feat` que incluyan la palabra clave **formulario**:\n   ```\n   git commit -m \"feat(formulario): agrega <parte concreta del formulario>\"\n   git commit -m \"feat(formulario): agrega <otra parte concreta>\"\n   ```\n3. Sube la rama:\n   ```\n   git push origin feature/seccion-formulario\n   ```\n\n### Reglas de mensaje de commit\n- Tipo permitido: `feat`\n- Debe contener la palabra **formulario**\n- Mínimo 20 caracteres de descripción real por commit\n- Ningún commit puede repetir el mensaje de otro\n\n**No hagas merge ni Pull Request.** Al completarse este paso, el taller queda terminado."
+    }
+  ]
+}
