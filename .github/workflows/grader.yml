@@ -17,8 +17,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Traer todas las ramas remotas
-        run: git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune
+      - name: Traer todas las ramas y tags remotos
+        run: git fetch origin '+refs/heads/*:refs/remotes/origin/*' '+refs/tags/*:refs/tags/*' --prune
 
       - name: Evaluar progreso del taller
         uses: actions/github-script@v7

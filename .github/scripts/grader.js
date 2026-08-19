@@ -34,6 +34,45 @@ function commitsUniqueTo(rama, ramaBase) {
     });
 }
 
+function archivosDe(hash) {
+  if (!hash) return [];
+  try {
+    const out = execSync(`git diff-tree --no-commit-id --name-only -r ${hash}`, {
+      encoding: 'utf8', maxBuffer: 10 * 1024 * 1024,
+    });
+    return out.split('\n').map((s) => s.trim()).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function commitsRaiz(rama) {
+  try {
+    const out = execSync(`git rev-list --max-parents=0 origin/${rama}`, { encoding: 'utf8' });
+    return out.split('\n').map((s) => s.trim()).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function tagInfo(nombreTag) {
+  let out;
+  try {
+    out = execSync(
+      `git for-each-ref refs/tags/${nombreTag} --format="%(objectname)${SEP1}%(contents)"`,
+      { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
+    );
+  } catch {
+    return null;
+  }
+  if (!out || !out.trim()) return null;
+  const idx = out.indexOf(SEP1);
+  if (idx < 0) return { objectname: out.trim(), contents: '' };
+  return { objectname: out.slice(0, idx), contents: out.slice(idx + 1).replace(/\n+$/, '') };
+}
+
+// ---------- Validacion de mensajes ----------
+
 const PALABRAS_GENERICAS = new Set([
   'update', 'updates', 'cambios', 'cambio', 'fix', 'fixes', 'wip',
   'prueba', 'pruebas', 'test', 'tests', 'testing', 'commit', 'commits',
@@ -86,16 +125,43 @@ function validarMensaje(subject, paso) {
   return { valid: errores.length === 0, errores };
 }
 
-function commitsRaiz(rama) {
-  try {
-    const out = execSync(`git rev-list --max-parents=0 origin/${rama}`, { encoding: 'utf8' });
-    return out.split('\n').map((s) => s.trim()).filter(Boolean);
-  } catch {
-    return [];
-  }
+function esRevertCommit(subject) {
+  return /^Revert "/.test(subject);
 }
 
-function evaluarPaso(paso) {
+function validarComoRama(crudos, paso) {
+  const vistos = new Map();
+  return crudos.map((c) => {
+    let valid;
+    let errores;
+    if (paso.tipo === 'revert' && esRevertCommit(c.subject)) {
+      valid = true;
+      errores = [];
+    } else {
+      const r = validarMensaje(c.subject, paso);
+      valid = r.valid;
+      errores = r.errores.slice();
+      if (paso.patronArchivo) {
+        const archivos = archivosDe(c.hash);
+        const patt = new RegExp(paso.patronArchivo, 'i');
+        if (!archivos.some((a) => patt.test(a))) {
+          valid = false;
+          errores.push(`Este commit no toca ningún archivo que coincida con ${paso.patronArchivo}: el taller espera contenido real de esa parte.`);
+        }
+      }
+    }
+    const clave = c.subject.trim().toLowerCase();
+    if (vistos.has(clave)) {
+      valid = false;
+      errores.push('Mensaje idéntico al de otro commit de esta misma rama.');
+    } else {
+      vistos.set(clave, true);
+    }
+    return { ...c, valid, errores };
+  });
+}
+
+function evaluarRama(paso) {
   if (!branchExists(paso.rama)) {
     return { existe: false, completo: false, commits: [] };
   }
@@ -106,35 +172,146 @@ function evaluarPaso(paso) {
   let crudos = commitsUniqueTo(paso.rama, paso.ramaBase);
   if (!paso.ramaBase) {
     // La rama sin base (main) incluye el commit semilla que GitHub Classroom
-    // genera automáticamente al crear el repo desde la plantilla: no es del
-    // estudiante, así que no debe contar ni marcarse como inválido.
+    // genera automaticamente al crear el repo desde la plantilla.
     const raices = new Set(commitsRaiz(paso.rama));
     crudos = crudos.filter((c) => !raices.has(c.hash));
   }
-  const vistos = new Map();
-  const commits = crudos.map((c) => {
-    const { valid, errores } = validarMensaje(c.subject, paso);
-    const clave = c.subject.trim().toLowerCase();
-    let finalValid = valid;
-    const finalErrores = [...errores];
-    if (vistos.has(clave)) {
-      finalValid = false;
-      finalErrores.push('Mensaje idéntico al de otro commit de esta misma rama.');
-    } else {
-      vistos.set(clave, true);
-    }
-    return { ...c, valid: finalValid, errores: finalErrores };
+
+  const commits = validarComoRama(crudos, paso);
+  let completo = commits.length >= paso.commitsMinimos && commits.every((c) => c.valid);
+  if (paso.tipo === 'revert') {
+    const tieneRevert = commits.some((c) => esRevertCommit(c.subject));
+    completo = completo && tieneRevert;
+  }
+  return { existe: true, completo, commits };
+}
+
+function evaluarMerge(paso) {
+  if (!branchExists(paso.ramaOrigen) || !branchExists(paso.ramaDestino)) {
+    return { existe: false, completo: false, commits: [] };
+  }
+  let esAncestro = false;
+  try {
+    execSync(`git merge-base --is-ancestor origin/${paso.ramaOrigen} origin/${paso.ramaDestino}`);
+    esAncestro = true;
+  } catch {
+    esAncestro = false;
+  }
+  if (!esAncestro) {
+    return { existe: true, completo: false, commits: [] };
+  }
+
+  let raw;
+  try {
+    raw = execSync(
+      `git log origin/${paso.ramaOrigen}..origin/${paso.ramaDestino} --merges --pretty=format:"%H${SEP1}%s${SEP2}"`,
+      { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
+    );
+  } catch {
+    raw = '';
+  }
+  const candidatos = raw.split(SEP2).map((s) => s.trim()).filter(Boolean).map((rec) => {
+    const [hash, subject] = rec.split(SEP1);
+    return { hash, subject: (subject || '').trim() };
   });
 
-  const completo = commits.length >= paso.commitsMinimos && commits.every((c) => c.valid);
+  if (!candidatos.length) {
+    return {
+      existe: true,
+      completo: false,
+      commits: [{
+        hash: '', subject: '(sin commit de merge)', valid: false,
+        errores: ['No encontré un commit de merge real: parece que el merge fue fast-forward. Usa git merge --no-ff.'],
+      }],
+    };
+  }
+
+  const commits = candidatos.map((c) => {
+    const errores = [];
+    if (c.subject.length < 20) errores.push('El mensaje del merge es muy corto para describir algo real.');
+    const kwRe = new RegExp(`\\b${paso.palabraClave}\\b`, 'i');
+    if (!kwRe.test(c.subject)) errores.push(`Falta la palabra clave "${paso.palabraClave}" en el mensaje del merge.`);
+    return { hash: c.hash, subject: c.subject, valid: errores.length === 0, errores };
+  });
+
+  const completo = commits.some((c) => c.valid);
   return { existe: true, completo, commits };
+}
+
+function evaluarTag(paso) {
+  const info = tagInfo(paso.nombreTag);
+  if (!info) {
+    return { existe: false, completo: false, commits: [] };
+  }
+  const errores = [];
+  const contenido = (info.contents || '').trim();
+  if (contenido.length < 10) {
+    errores.push('El tag necesita un mensaje real (usa git tag -a, no un tag simple).');
+  }
+  const kwRe = new RegExp(`\\b${paso.palabraClave}\\b`, 'i');
+  if (!kwRe.test(contenido)) {
+    errores.push(`Falta la palabra clave "${paso.palabraClave}" en el mensaje del tag.`);
+  }
+  const valid = errores.length === 0;
+  return {
+    existe: true,
+    completo: valid,
+    commits: [{ hash: info.objectname, subject: contenido || '(tag sin mensaje)', valid, errores }],
+  };
+}
+
+function evaluarCherryPick(paso) {
+  if (!branchExists(paso.ramaOrigen) || !branchExists(paso.ramaDestino)) {
+    return { existe: false, completo: false, commits: [] };
+  }
+  const origenTip = execSync(`git rev-parse origin/${paso.ramaOrigen}`, { encoding: 'utf8' }).trim();
+  const corto = origenTip.slice(0, 7);
+
+  let raw;
+  try {
+    raw = execSync(
+      `git log origin/${paso.ramaDestino} --pretty=format:"%H${SEP1}%B${SEP2}"`,
+      { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
+    );
+  } catch {
+    raw = '';
+  }
+  const commits = raw.split(SEP2).map((s) => s.trim()).filter(Boolean).map((rec) => {
+    const idx = rec.indexOf(SEP1);
+    return { hash: rec.slice(0, idx), body: rec.slice(idx + 1) };
+  });
+
+  const encontrado = commits.find(
+    (c) => c.body.toLowerCase().includes(`cherry picked from commit ${corto}`) || c.body.includes(origenTip)
+  );
+
+  if (!encontrado) {
+    return {
+      existe: true,
+      completo: false,
+      commits: [{
+        hash: '', subject: '(sin cherry-pick detectado)', valid: false,
+        errores: [`Todavía no encuentro en ${paso.ramaDestino} un commit que traiga (con -x) el último commit de ${paso.ramaOrigen}.`],
+      }],
+    };
+  }
+  return {
+    existe: true,
+    completo: true,
+    commits: [{ hash: encontrado.hash, subject: '(cherry-pick detectado correctamente)', valid: true, errores: [] }],
+  };
+}
+
+function evaluarPaso(paso) {
+  if (paso.tipo === 'merge') return evaluarMerge(paso);
+  if (paso.tipo === 'tag') return evaluarTag(paso);
+  if (paso.tipo === 'cherry-pick') return evaluarCherryPick(paso);
+  return evaluarRama(paso); // 'rama' y 'revert'
 }
 
 module.exports = async ({ github, context, core }) => {
   const { owner, repo } = context.repo;
   const { pasos } = JSON.parse(fs.readFileSync('taller/pasos.json', 'utf8'));
-
-  const pushedBranch = context.eventName === 'push' ? context.ref.replace('refs/heads/', '') : null;
 
   const estado = {};
 
@@ -164,7 +341,7 @@ module.exports = async ({ github, context, core }) => {
       } else if (issue.state === 'open') {
         await github.rest.issues.createComment({
           owner, repo, issue_number: issue.number,
-          body: `✅ **Paso completado.** Los ${ev.commits.length} commits de \`${paso.rama}\` cumplen el formato y el contenido esperado. ¡Buen trabajo!`,
+          body: '✅ **Paso completado.** Cumple el formato y el contenido esperado. ¡Buen trabajo!',
         });
         await github.rest.issues.update({
           owner, repo, issue_number: issue.number, state: 'closed', labels: [labelPaso, 'completado'],
@@ -175,20 +352,23 @@ module.exports = async ({ github, context, core }) => {
         await github.rest.issues.create({
           owner, repo, title: paso.tituloIssue, body: paso.cuerpoIssue, labels: [labelPaso],
         });
-      } else if (issue && issue.state === 'open' && pushedBranch === paso.rama && ev.commits.length > 0) {
+      } else if (issue && issue.state === 'open' && ev.existe) {
         const invalidos = ev.commits.filter((c) => !c.valid);
         if (invalidos.length > 0) {
           const detalle = invalidos
-            .map((c) => `- \`${c.hash.slice(0, 7)}\` "${c.subject}"\n  - ${c.errores.join('\n  - ')}`)
+            .map((c) => {
+              const etiquetaHash = c.hash ? `\`${c.hash.slice(0, 7)}\` ` : '';
+              return `- ${etiquetaHash}"${c.subject}"\n  - ${c.errores.join('\n  - ')}`;
+            })
             .join('\n');
           await github.rest.issues.createComment({
             owner, repo, issue_number: issue.number,
-            body: `⚠️ Encontré commits que todavía no cumplen las reglas de este paso:\n\n${detalle}\n\nCorrígelos (por ejemplo con \`git commit --amend\` para el último, o \`git rebase -i\` para uno anterior) y vuelve a hacer push.`,
+            body: `⚠️ Todavía no cumple las reglas de este paso:\n\n${detalle}\n\nCorrígelo y vuelve a hacer push (o \`git push --tags\` si es un tag).`,
           });
-        } else if (ev.commits.length < paso.commitsMinimos) {
+        } else if (typeof paso.commitsMinimos === 'number' && ev.commits.length < paso.commitsMinimos) {
           await github.rest.issues.createComment({
             owner, repo, issue_number: issue.number,
-            body: `👀 Vas bien: ${ev.commits.length}/${paso.commitsMinimos} commits válidos en \`${paso.rama}\`. Sigue así.`,
+            body: `👀 Vas bien: ${ev.commits.length}/${paso.commitsMinimos} commits válidos. Sigue así.`,
           });
         }
       }
@@ -205,7 +385,7 @@ module.exports = async ({ github, context, core }) => {
       const created = await github.rest.issues.create({
         owner, repo,
         title: '🏁 ¡Taller de árboles de commits completado!',
-        body: 'Completaste los 5 pasos con commits reales y sin merges. Tu árbol de commits debería tener 4 ramas divergentes desde `main` (una de ellas nacida de otra rama, no de `main`). Comparte el link de tu repositorio con tu profesor.',
+        body: 'Completaste los 15 pasos: 10 ramas de contenido, 2 merges reales, 1 tag anotado, 1 cherry-pick y 1 revert. Comparte el link de tu repositorio con tu profesor.',
         labels: [finalLabel],
       });
       await github.rest.issues.update({ owner, repo, issue_number: created.data.number, state: 'closed' });
@@ -216,12 +396,8 @@ module.exports = async ({ github, context, core }) => {
     core.summary
       .addHeading('Estado del taller')
       .addTable([
-        [{ data: 'Paso', header: true }, { data: 'Completo', header: true }, { data: 'Commits válidos', header: true }],
-        ...pasos.map((p) => [
-          p.id,
-          estado[p.id].completo ? '✅' : '⏳',
-          `${estado[p.id].commits.filter((c) => c.valid).length}/${estado[p.id].commits.length}`,
-        ]),
+        [{ data: 'Paso', header: true }, { data: 'Tipo', header: true }, { data: 'Completo', header: true }],
+        ...pasos.map((p) => [p.id, p.tipo, estado[p.id].completo ? '✅' : '⏳']),
       ])
       .write();
   }

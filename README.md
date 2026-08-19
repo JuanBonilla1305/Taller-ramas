@@ -6,19 +6,28 @@ Una **página web real, con contenido real** — el tema lo eliges tú (un porta
 
 Ese contenido (HTML, CSS, JS) es completamente tuyo — nadie te va a decir qué código escribir. Lo que sí vamos a evaluar con lupa es **cómo usas git** mientras lo construyes.
 
+Este taller lo tienes que hacer tú, a mano. No dejes que una IA te haga los commits, las ramas o los merges: el ejercicio existe para que practiques tú, no para que quede un repo bonito. Hay chequeos automáticos sobre el contenido y el patrón de trabajo.
+
 ## Qué vas a practicar
 
-- Crear ramas desde `main` y desde otras ramas.
-- Escribir mensajes de commit que describan de verdad lo que hiciste (nada de "update" o "cambios").
-- Terminar el taller con un árbol de commits con varias ramas **divergentes** — por diseño, aquí **no se hacen Pull Requests ni merges**. El objetivo es que el árbol quede bien definido y sea fácil de leer.
+15 pasos que cubren:
+
+- Crear ramas desde `main` y desde otras ramas (incluye dos casos de rama-sobre-rama).
+- Escribir mensajes de commit que describan de verdad lo que hiciste (nada de "update" o "cambios"), y que además toquen el tipo de archivo que corresponde a esa parte del sitio.
+- **2 merges obligatorios** (`git merge --no-ff`) para integrar ramas en `main`.
+- Un **tag anotado** marcando una versión.
+- Un **cherry-pick** entre ramas (`git cherry-pick -x`).
+- Un **revert** de un commit propio (`git revert`).
 
 ## Cómo funciona
 
-1. Ve a la pestaña **Issues** de este repositorio. Ahí vas a encontrar el primer paso con instrucciones de **git** (no de código).
-2. Cada vez que hagas `git push`, un workflow revisa tus commits automáticamente:
-   - Si cumplen el formato y el contenido esperado, el issue del paso se cierra solo y aparece el siguiente.
+1. Ve a la pestaña **Issues** de este repositorio. Ahí vas a encontrar el paso 1/15, con instrucciones de **git** (no de código).
+2. Cada vez que hagas `git push` (de una rama o de un tag), un workflow revisa tu repositorio automáticamente:
+   - Si el paso se cumple, el issue se cierra solo y aparece(n) el/los siguiente(s) — varios pasos pueden desbloquearse en paralelo si comparten el mismo requisito.
    - Si algo no cumple, te va a comentar exactamente qué está mal para que lo corrijas.
-3. Repite hasta completar los 5 pasos. Al final se abre y cierra un issue de felicitación.
+3. Repite hasta completar los 15 pasos. Al final se abre y cierra un issue de felicitación.
+
+Los pasos tienen dependencias: por ejemplo, el tag del paso 8 necesita que los dos merges (pasos 6 y 7) ya estén hechos, y el cherry-pick del paso 11 necesita las ramas de los pasos 4 y 9.
 
 ## Formato de los mensajes de commit
 
@@ -33,8 +42,10 @@ Reglas que se revisan automáticamente en cada paso:
 - El **tipo** debe ser uno de los permitidos para ese paso (se indica en el issue).
 - Debe incluir la **palabra clave** de ese paso (también indicada en el issue).
 - La descripción debe tener contenido real: mínimo 20 caracteres y al menos 3 palabras que no sean relleno genérico.
+- En los pasos que lo indican, el commit debe tocar un archivo del tipo esperado (`.html`, `.css` o `.js`) — no basta con cambiar el mensaje.
 - Ningún commit puede repetir el mensaje de otro dentro de la misma rama.
 - **No se aceptan mensajes genéricos**: `update`, `cambios`, `fix`, `wip`, `prueba`, `arreglos`, etc. van a ser rechazados.
+- Los merges necesitan un mensaje propio y real (`git merge --no-ff -m "..."`), y los tags necesitan ser anotados (`git tag -a`).
 
 ## Ver tu progreso en vivo
 
@@ -50,6 +61,7 @@ y vas a ver tu árbol dibujado y comparado contra el diagrama objetivo del talle
 
 ## Reglas rápidas
 
-- No hagas `git merge` ni Pull Requests en este taller.
 - No edites `taller/pasos.json` ni `.github/` — ahí vive la validación automática.
+- Usa `--no-ff` en los dos merges obligatorios; si no, git puede hacer fast-forward y no queda un commit de merge que se pueda validar.
+- Usa `-x` en el cherry-pick; sin esa bandera no queda el rastro que se valida.
 - Si un commit quedó mal escrito, corrígelo con `git commit --amend` (si es el último) o `git rebase -i` (si es uno anterior) y vuelve a hacer push; no hagas un commit nuevo solo para "arreglar el mensaje".

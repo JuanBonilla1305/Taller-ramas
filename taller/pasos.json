@@ -1,60 +1,186 @@
 {
-  "$schema": "Definición de pasos del taller de árboles de commits. No editar los ids ni los nombres de rama: el workflow y el visualizador dependen de que coincidan.",
+  "$schema": "Definicion de los 15 pasos del taller. No editar ids, nombres de rama ni nombres de tag: el workflow y el visualizador dependen de que coincidan.",
   "pasos": [
     {
       "id": "main-setup",
+      "tipo": "rama",
       "rama": "main",
       "ramaBase": null,
       "commitsMinimos": 2,
       "palabraClave": "base",
       "tiposPermitidos": ["chore", "docs"],
+      "patronArchivo": null,
       "requiere": [],
-      "tituloIssue": "Paso 1 — Base del proyecto en main",
-      "cuerpoIssue": "## Objetivo de este paso\n\nDejar la rama `main` con la base del proyecto, usando **dos commits reales** (no genéricos).\n\n### Instrucciones de git (NO se pide código de la página aquí, eso lo decides tú)\n\n1. Asegúrate de estar en `main`:\n   ```\n   git checkout main\n   ```\n2. Crea (o edita) los archivos base de tu página con contenido real de lo que vas a construir. Cuando tengas ese primer avance, haz un commit tipo `chore` que incluya la palabra clave **base**. Ejemplo de formato (no copies el texto, descríbelo con tus propias palabras):\n   ```\n   git add .\n   git commit -m \"chore(setup): base del proyecto — estructura inicial de <tu-idea-de-pagina>\"\n   ```\n3. Edita el `README.md` con una descripción real de tu proyecto (qué es, para qué sirve, qué secciones tendrá) y haz un segundo commit tipo `docs`, incluyendo también la palabra clave **base**:\n   ```\n   git add README.md\n   git commit -m \"docs(readme): base de la documentación del proyecto <tu-idea>\"\n   ```\n4. Sube los cambios:\n   ```\n   git push origin main\n   ```\n\n### Reglas de mensaje de commit (se validan automáticamente)\n- Formato: `tipo(alcance opcional): descripción`\n- Tipos permitidos aquí: `chore`, `docs`\n- Debe contener la palabra **base**\n- Mínimo 20 caracteres de descripción real, nada de \"update\", \"cambios\", \"wip\", etc.\n- Los dos commits no pueden tener el mismo mensaje.\n\nCuando ambos commits sean válidos y estén en `main`, este issue se cierra solo y se abren los del siguiente paso."
+      "tituloIssue": "Paso 1/15 — Base del proyecto en main",
+      "cuerpoIssue": "Deja `main` con la base del proyecto: **2 commits reales**.\n\n1. `git checkout main`\n2. Agrega el contenido inicial real de tu página y haz un commit `chore` con la palabra clave **base**.\n3. Edita `README.md` con una descripción real del proyecto y haz un commit `docs`, también con **base**.\n4. `git push origin main`\n\nFormato: `tipo(alcance): descripcion` · tipos: chore, docs · min. 20 caracteres · sin mensajes genéricos."
     },
     {
       "id": "estructura-html",
+      "tipo": "rama",
       "rama": "feature/estructura-html",
       "ramaBase": "main",
-      "commitsMinimos": 2,
+      "commitsMinimos": 3,
       "palabraClave": "estructura",
       "tiposPermitidos": ["feat"],
+      "patronArchivo": "\\.html$",
       "requiere": ["main-setup"],
-      "tituloIssue": "Paso 2 — Rama feature/estructura-html",
-      "cuerpoIssue": "## Objetivo de este paso\n\nCrear la rama `feature/estructura-html` desde `main` y avanzar la estructura de tu página con **dos commits reales**.\n\n### Instrucciones de git\n\n1. Parado en `main` (ya con el paso 1 hecho), crea la rama:\n   ```\n   git checkout -b feature/estructura-html\n   ```\n2. Agrega contenido real a la estructura de tu página (las secciones que quieras: encabezado, contenido principal, lo que sea de tu idea). Haz un commit tipo `feat` que incluya la palabra clave **estructura**:\n   ```\n   git add .\n   git commit -m \"feat(estructura): agrega <describe qué sección agregaste> — estructura\"\n   ```\n3. Sigue avanzando contenido real y haz un segundo commit `feat`, también con la palabra **estructura**, describiendo lo nuevo (debe ser un cambio distinto al anterior, no repitas el mismo mensaje).\n4. Sube la rama:\n   ```\n   git push origin feature/estructura-html\n   ```\n\n### Reglas de mensaje de commit\n- Tipo permitido aquí: `feat`\n- Debe contener la palabra **estructura**\n- Mínimo 20 caracteres de descripción real\n- Los commits no pueden repetirse entre sí\n\n**No hagas merge ni Pull Request de esta rama.** Se queda así, divergente de `main`, para que el árbol de commits quede bien definido.\n\nAl completar este paso se desbloquea el paso de `feature/seccion-formulario` (que nace de esta rama)."
+      "tituloIssue": "Paso 2/15 — Rama feature/estructura-html",
+      "cuerpoIssue": "Desde `main`, crea `feature/estructura-html` y avanza la estructura HTML con **3 commits reales**.\n\n1. `git checkout main && git checkout -b feature/estructura-html`\n2. 3 commits `feat`, cada uno con la palabra clave **estructura**, cada uno tocando al menos un archivo `.html`.\n3. `git push origin feature/estructura-html`\n\n**No hagas merge ni Pull Request todavía** (esta rama se integra más adelante, en el paso 6)."
     },
     {
       "id": "estilos-css",
+      "tipo": "rama",
       "rama": "feature/estilos-css",
       "ramaBase": "main",
       "commitsMinimos": 3,
       "palabraClave": "estilos",
       "tiposPermitidos": ["feat", "style"],
+      "patronArchivo": "\\.css$",
       "requiere": ["main-setup"],
-      "tituloIssue": "Paso 3 — Rama feature/estilos-css",
-      "cuerpoIssue": "## Objetivo de este paso\n\nCrear la rama `feature/estilos-css` desde `main` y avanzar el diseño visual con **tres commits reales**.\n\n### Instrucciones de git\n\n1. Parado en `main`, crea la rama:\n   ```\n   git checkout main\n   git checkout -b feature/estilos-css\n   ```\n2. Haz tres commits (tipo `feat` o `style`) trabajando en el diseño visual real de tu página. Cada mensaje debe incluir la palabra clave **estilos** y describir un cambio distinto de verdad, por ejemplo:\n   ```\n   git commit -m \"style(estilos): define la paleta de colores y tipografía\"\n   git commit -m \"feat(estilos): estilos del <sección concreta de tu página>\"\n   git commit -m \"style(estilos): ajusta espaciado y responsive de <parte concreta>\"\n   ```\n   (usa tus propias descripciones reales, no copies literal el ejemplo)\n3. Sube la rama:\n   ```\n   git push origin feature/estilos-css\n   ```\n\n### Reglas de mensaje de commit\n- Tipos permitidos: `feat`, `style`\n- Debe contener la palabra **estilos**\n- Mínimo 20 caracteres de descripción real por commit\n- Ningún commit puede repetir el mensaje de otro\n\n**No hagas merge ni Pull Request de esta rama.**"
+      "tituloIssue": "Paso 3/15 — Rama feature/estilos-css",
+      "cuerpoIssue": "Desde `main`, crea `feature/estilos-css` y avanza el diseño con **3 commits reales**.\n\n1. `git checkout main && git checkout -b feature/estilos-css`\n2. 3 commits (`feat` o `style`) con la palabra clave **estilos**, cada uno tocando al menos un archivo `.css`.\n3. `git push origin feature/estilos-css`\n\n**No hagas merge ni Pull Request todavía** (se integra en el paso 7)."
     },
     {
       "id": "interactividad-js",
+      "tipo": "rama",
       "rama": "feature/interactividad-js",
       "ramaBase": "main",
       "commitsMinimos": 3,
       "palabraClave": "interactividad",
       "tiposPermitidos": ["feat", "fix"],
+      "patronArchivo": "\\.js$",
       "requiere": ["main-setup"],
-      "tituloIssue": "Paso 4 — Rama feature/interactividad-js",
-      "cuerpoIssue": "## Objetivo de este paso\n\nCrear la rama `feature/interactividad-js` desde `main` y avanzar la interactividad (JavaScript real, no un alert de saludo) con **tres commits reales**.\n\n### Instrucciones de git\n\n1. Parado en `main`, crea la rama:\n   ```\n   git checkout main\n   git checkout -b feature/interactividad-js\n   ```\n2. Haz tres commits (`feat`, o `fix` si estás corrigiendo algo que ya escribiste en esta misma rama) agregando comportamiento real a tu página. Cada mensaje debe incluir la palabra clave **interactividad**:\n   ```\n   git commit -m \"feat(interactividad): agrega <comportamiento concreto>\"\n   git commit -m \"feat(interactividad): agrega <otro comportamiento concreto>\"\n   git commit -m \"fix(interactividad): corrige <detalle concreto que arreglaste>\"\n   ```\n3. Sube la rama:\n   ```\n   git push origin feature/interactividad-js\n   ```\n\n### Reglas de mensaje de commit\n- Tipos permitidos: `feat`, `fix`\n- Debe contener la palabra **interactividad**\n- Mínimo 20 caracteres de descripción real por commit\n- Ningún commit puede repetir el mensaje de otro\n\n**No hagas merge ni Pull Request de esta rama.**"
+      "tituloIssue": "Paso 4/15 — Rama feature/interactividad-js",
+      "cuerpoIssue": "Desde `main`, crea `feature/interactividad-js` con **3 commits reales** (`feat`/`fix`), cada uno con la palabra clave **interactividad** y tocando al menos un archivo `.js`.\n\n1. `git checkout main && git checkout -b feature/interactividad-js`\n2. 3 commits.\n3. `git push origin feature/interactividad-js`\n\n**Esta rama no se integra en el taller** — queda divergente a propósito. Más adelante (paso 11) vas a traer un commit de otra rama aquí con cherry-pick, y en el paso 13 vas a revertir uno de estos commits, así que no la borres."
     },
     {
       "id": "seccion-formulario",
+      "tipo": "rama",
       "rama": "feature/seccion-formulario",
       "ramaBase": "feature/estructura-html",
-      "commitsMinimos": 2,
+      "commitsMinimos": 3,
       "palabraClave": "formulario",
       "tiposPermitidos": ["feat"],
+      "patronArchivo": "\\.html$",
       "requiere": ["estructura-html"],
-      "tituloIssue": "Paso 5 — Rama feature/seccion-formulario (nace de otra rama, no de main)",
-      "cuerpoIssue": "## Objetivo de este paso\n\nEsta rama nace de **`feature/estructura-html`**, no de `main` — así se practica crear una rama a partir de otra rama. Necesitas **dos commits reales**.\n\n### Instrucciones de git\n\n1. Parado en `feature/estructura-html` (con el paso 2 ya hecho):\n   ```\n   git checkout feature/estructura-html\n   git checkout -b feature/seccion-formulario\n   ```\n2. Agrega contenido real relacionado con algún tipo de formulario o interacción del usuario en tu página, con dos commits `feat` que incluyan la palabra clave **formulario**:\n   ```\n   git commit -m \"feat(formulario): agrega <parte concreta del formulario>\"\n   git commit -m \"feat(formulario): agrega <otra parte concreta>\"\n   ```\n3. Sube la rama:\n   ```\n   git push origin feature/seccion-formulario\n   ```\n\n### Reglas de mensaje de commit\n- Tipo permitido: `feat`\n- Debe contener la palabra **formulario**\n- Mínimo 20 caracteres de descripción real por commit\n- Ningún commit puede repetir el mensaje de otro\n\n**No hagas merge ni Pull Request.** Al completarse este paso, el taller queda terminado."
+      "tituloIssue": "Paso 5/15 — Rama feature/seccion-formulario (nace de otra rama)",
+      "cuerpoIssue": "Esta rama nace de **`feature/estructura-html`**, no de `main`.\n\n1. `git checkout feature/estructura-html && git checkout -b feature/seccion-formulario`\n2. 3 commits `feat` con la palabra clave **formulario**, tocando `.html`.\n3. `git push origin feature/seccion-formulario`\n\n**No hagas merge ni Pull Request.**"
+    },
+    {
+      "id": "merge-estructura",
+      "tipo": "merge",
+      "ramaOrigen": "feature/estructura-html",
+      "ramaDestino": "main",
+      "palabraClave": "estructura",
+      "requiere": ["estructura-html"],
+      "tituloIssue": "Paso 6/15 — Merge obligatorio: feature/estructura-html → main",
+      "cuerpoIssue": "Integra `feature/estructura-html` en `main` con un **merge commit real** (no fast-forward).\n\n1. `git checkout main`\n2. `git merge --no-ff feature/estructura-html -m \"merge: integra la estructura del sitio en main\"` (el mensaje debe incluir la palabra **estructura** y describir algo real, no puede ser el mensaje automático de git).\n3. Si hay conflictos, resuélvelos, `git add` los archivos y `git commit` para terminar el merge.\n4. `git push origin main`\n\nUsa `--no-ff` a propósito: si no, git podría hacer fast-forward y no quedaría un commit de merge que podamos validar."
+    },
+    {
+      "id": "merge-estilos",
+      "tipo": "merge",
+      "ramaOrigen": "feature/estilos-css",
+      "ramaDestino": "main",
+      "palabraClave": "estilos",
+      "requiere": ["estilos-css", "merge-estructura"],
+      "tituloIssue": "Paso 7/15 — Merge obligatorio: feature/estilos-css → main",
+      "cuerpoIssue": "Integra `feature/estilos-css` en `main`, también con merge commit real.\n\n1. `git checkout main`\n2. `git merge --no-ff feature/estilos-css -m \"merge: integra los estilos del sitio en main\"` (debe incluir la palabra **estilos**).\n3. Resuelve conflictos si aparecen y termina el merge.\n4. `git push origin main`"
+    },
+    {
+      "id": "tag-lanzamiento",
+      "tipo": "tag",
+      "nombreTag": "v1.0-taller",
+      "palabraClave": "lanzamiento",
+      "requiere": ["merge-estructura", "merge-estilos"],
+      "tituloIssue": "Paso 8/15 — Tag v1.0-taller",
+      "cuerpoIssue": "Con `main` ya integrado (estructura + estilos), marca este punto como un lanzamiento con un **tag anotado**.\n\n1. `git checkout main`\n2. `git tag -a v1.0-taller -m \"lanzamiento: primera version integrada del sitio\"` (el mensaje del tag debe incluir la palabra **lanzamiento** y describir algo real).\n3. `git push origin v1.0-taller`\n\nUn tag simple (`git tag v1.0-taller`, sin `-a`) no sirve para este paso: necesitas el mensaje anotado."
+    },
+    {
+      "id": "footer",
+      "tipo": "rama",
+      "rama": "feature/footer",
+      "ramaBase": "main",
+      "commitsMinimos": 2,
+      "palabraClave": "footer",
+      "tiposPermitidos": ["feat"],
+      "patronArchivo": "\\.html$",
+      "requiere": ["tag-lanzamiento"],
+      "tituloIssue": "Paso 9/15 — Rama feature/footer",
+      "cuerpoIssue": "Desde `main` (ya con los merges y el tag), crea `feature/footer` con **2 commits reales** (`feat`, palabra clave **footer**, tocando `.html`).\n\n1. `git checkout main && git checkout -b feature/footer`\n2. 2 commits.\n3. `git push origin feature/footer`\n\nGuarda el hash de tu último commit de esta rama (`git log -1 --format=%H`): lo vas a necesitar en el paso 11."
+    },
+    {
+      "id": "galeria",
+      "tipo": "rama",
+      "rama": "feature/galeria",
+      "ramaBase": "main",
+      "commitsMinimos": 3,
+      "palabraClave": "galeria",
+      "tiposPermitidos": ["feat"],
+      "patronArchivo": "\\.(html|css)$",
+      "requiere": ["tag-lanzamiento"],
+      "tituloIssue": "Paso 10/15 — Rama feature/galeria",
+      "cuerpoIssue": "Desde `main`, crea `feature/galeria` con **3 commits reales** (`feat`, palabra clave **galeria**, tocando `.html` o `.css`).\n\n1. `git checkout main && git checkout -b feature/galeria`\n2. 3 commits.\n3. `git push origin feature/galeria`"
+    },
+    {
+      "id": "cherry-pick-footer",
+      "tipo": "cherry-pick",
+      "ramaOrigen": "feature/footer",
+      "ramaDestino": "feature/interactividad-js",
+      "requiere": ["footer", "interactividad-js"],
+      "tituloIssue": "Paso 11/15 — Cherry-pick de feature/footer a feature/interactividad-js",
+      "cuerpoIssue": "Trae el **último commit** de `feature/footer` a `feature/interactividad-js`, sin mezclar las ramas completas.\n\n1. `git checkout feature/interactividad-js`\n2. Copia el hash del último commit de `feature/footer` (`git log feature/footer -1 --format=%H`).\n3. `git cherry-pick -x <hash>` (la bandera `-x` es obligatoria: deja un rastro `\"(cherry picked from commit ...)\"` en el mensaje, que es lo que se valida).\n4. Si hay conflicto, resuélvelo y `git cherry-pick --continue`.\n5. `git push origin feature/interactividad-js`"
+    },
+    {
+      "id": "testimonios",
+      "tipo": "rama",
+      "rama": "feature/testimonios",
+      "ramaBase": "main",
+      "commitsMinimos": 3,
+      "palabraClave": "testimonios",
+      "tiposPermitidos": ["feat"],
+      "patronArchivo": "\\.html$",
+      "requiere": ["tag-lanzamiento"],
+      "tituloIssue": "Paso 12/15 — Rama feature/testimonios",
+      "cuerpoIssue": "Desde `main`, crea `feature/testimonios` con **3 commits reales** (`feat`, palabra clave **testimonios**, tocando `.html`).\n\n1. `git checkout main && git checkout -b feature/testimonios`\n2. 3 commits.\n3. `git push origin feature/testimonios`"
+    },
+    {
+      "id": "correccion-carrito",
+      "tipo": "revert",
+      "rama": "feature/correccion-carrito",
+      "ramaBase": "feature/interactividad-js",
+      "commitsMinimos": 2,
+      "palabraClave": "correccion",
+      "tiposPermitidos": ["fix"],
+      "patronArchivo": null,
+      "requiere": ["cherry-pick-footer"],
+      "tituloIssue": "Paso 13/15 — Revertir un commit en feature/correccion-carrito",
+      "cuerpoIssue": "Practica revertir un cambio ya hecho, sin borrar historia.\n\n1. `git checkout feature/interactividad-js && git checkout -b feature/correccion-carrito`\n2. Busca el commit del paso 4 que corrige el contador (`fix(interactividad): corrige el contador...`) y revierte justo ese: `git revert <hash>` (deja el mensaje automático `Revert \"...\"` que genera git, no lo cambies).\n3. Haz un segundo commit `fix` explicando la corrección real que sí vas a dejar, con la palabra clave **correccion**.\n4. `git push origin feature/correccion-carrito`"
+    },
+    {
+      "id": "contacto",
+      "tipo": "rama",
+      "rama": "feature/contacto",
+      "ramaBase": "main",
+      "commitsMinimos": 3,
+      "palabraClave": "contacto",
+      "tiposPermitidos": ["feat"],
+      "patronArchivo": "\\.html$",
+      "requiere": ["tag-lanzamiento"],
+      "tituloIssue": "Paso 14/15 — Rama feature/contacto",
+      "cuerpoIssue": "Desde `main`, crea `feature/contacto` con **3 commits reales** (`feat`, palabra clave **contacto**, tocando `.html`).\n\n1. `git checkout main && git checkout -b feature/contacto`\n2. 3 commits.\n3. `git push origin feature/contacto`"
+    },
+    {
+      "id": "precios",
+      "tipo": "rama",
+      "rama": "feature/precios",
+      "ramaBase": "feature/galeria",
+      "commitsMinimos": 2,
+      "palabraClave": "precios",
+      "tiposPermitidos": ["feat"],
+      "patronArchivo": "\\.html$",
+      "requiere": ["galeria"],
+      "tituloIssue": "Paso 15/15 — Rama feature/precios (nace de feature/galeria)",
+      "cuerpoIssue": "Última rama, nace de **`feature/galeria`**, no de `main`.\n\n1. `git checkout feature/galeria && git checkout -b feature/precios`\n2. 2 commits `feat` con la palabra clave **precios**, tocando `.html`.\n3. `git push origin feature/precios`\n\nCon esto se cierra el taller."
     }
   ]
 }
