@@ -201,19 +201,21 @@ function evaluarMerge(paso) {
     return { existe: true, completo: false, commits: [] };
   }
 
+  const origenTip = execSync(`git rev-parse origin/${paso.ramaOrigen}`, { encoding: 'utf8' }).trim();
+
   let raw;
   try {
     raw = execSync(
-      `git log origin/${paso.ramaOrigen}..origin/${paso.ramaDestino} --merges --pretty=format:"%H${SEP1}%s${SEP2}"`,
+      `git log origin/${paso.ramaOrigen}..origin/${paso.ramaDestino} --merges --pretty=format:"%H${SEP1}%P${SEP1}%s${SEP2}"`,
       { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
     );
   } catch {
     raw = '';
   }
   const candidatos = raw.split(SEP2).map((s) => s.trim()).filter(Boolean).map((rec) => {
-    const [hash, subject] = rec.split(SEP1);
-    return { hash, subject: (subject || '').trim() };
-  });
+    const [hash, parents, subject] = rec.split(SEP1);
+    return { hash, parents: (parents || '').trim().split(/\s+/), subject: (subject || '').trim() };
+  }).filter((c) => c.parents.includes(origenTip)); // solo merges que traen directamente el tip de ramaOrigen
 
   if (!candidatos.length) {
     return {
