@@ -13,12 +13,55 @@ function branchExists(ref) {
   }
 }
 
-function commitsUniqueTo(rama, ramaBase) {
-  const range = ramaBase ? `origin/${ramaBase}..origin/${rama}` : `origin/${rama}`;
+function commitDeMergeQueTrae(origenTip, destino) {
+  // Busca, en el historial de `destino`, el commit de merge que trajo
+  // directamente `origenTip` como uno de sus padres.
   let raw;
   try {
     raw = execSync(
-      `git log ${range} --date-order --pretty=format:"%H${SEP1}%s${SEP2}"`,
+      `git log ${origenTip}..origin/${destino} --merges --pretty=format:"%H${SEP1}%P${SEP2}"`,
+      { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
+    );
+  } catch {
+    return null;
+  }
+  const candidatos = raw.split(SEP2).map((s) => s.trim()).filter(Boolean).map((rec) => {
+    const [hash, parents] = rec.split(SEP1);
+    return { hash, parents: (parents || '').trim().split(/\s+/).filter(Boolean) };
+  }).filter((c) => c.parents.includes(origenTip));
+  return candidatos[0] || null;
+}
+
+function commitsUniqueTo(rama, ramaBase) {
+  let range;
+  let yaMergeada = false;
+  try {
+    execSync(`git merge-base --is-ancestor origin/${rama} origin/${ramaBase}`);
+    yaMergeada = true;
+  } catch {
+    yaMergeada = false;
+  }
+
+  if (yaMergeada) {
+    // `rama` ya se fusionó en `ramaBase`. Comparar contra el tip actual de
+    // ramaBase daría un rango vacío (ya la contiene, y pudo seguir avanzando
+    // con otros merges despues) — se detectó probando contra el repo de
+    // prueba ya mergeado: estructura-html/estilos-css perdian sus commits
+    // justo al cumplir lo que el taller pide. Usamos el propio commit de
+    // merge: su primer padre es el estado de ramaBase justo antes de esa
+    // fusión, y eso no cambia aunque ramaBase siga avanzando despues.
+    const origenTip = execSync(`git rev-parse origin/${rama}`, { encoding: 'utf8' }).trim();
+    const mergeCommit = commitDeMergeQueTrae(origenTip, ramaBase);
+    if (!mergeCommit || mergeCommit.parents.length < 2) return [];
+    range = `${mergeCommit.parents[0]}..${origenTip}`;
+  } else {
+    range = `origin/${ramaBase}..origin/${rama}`;
+  }
+
+  let raw;
+  try {
+    raw = execSync(
+      `git log ${range} --date-order --pretty=format:"%H${SEP1}%B${SEP2}"`,
       { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
     );
   } catch {
@@ -26,12 +69,20 @@ function commitsUniqueTo(rama, ramaBase) {
   }
   return raw
     .split(SEP2)
-    .map((rec) => rec.trim())
-    .filter(Boolean)
+    .map((rec) => rec.replace(/^\s+/, ''))
+    .filter((rec) => rec.trim())
     .map((rec) => {
-      const [hash, subject] = rec.split(SEP1);
-      return { hash, subject: (subject || '').trim() };
-    });
+      const idx = rec.indexOf(SEP1);
+      const hash = rec.slice(0, idx);
+      const body = rec.slice(idx + 1).replace(/\s+$/, '');
+      const subject = (body.split('\n')[0] || '').trim();
+      return { hash, subject, body };
+    })
+    // Un commit traido con cherry-pick -x no es autoria original de esta
+    // rama (pertenece al paso de cherry-pick): no debe contar ni fallar aqui.
+    // Se detecto probando contra prueba: el cherry-pick obligatorio del paso
+    // 11 rompia la validacion propia de feature/interactividad-js.
+    .filter((c) => !c.body.toLowerCase().includes('cherry picked from commit'));
 }
 
 function archivosDe(hash) {
@@ -44,6 +95,34 @@ function archivosDe(hash) {
   } catch {
     return [];
   }
+}
+
+function commitsIniciales(rama) {
+  // Commits hechos directamente en `rama` (primer padre) antes de su primer
+  // merge. `git log origin/rama` sin acotar arrastra para siempre todo el
+  // historial de cualquier cosa ya fusionada ahi (se detecto probando contra
+  // el repo de prueba ya mergeado: main-setup nunca volvia a validar como
+  // completo). Cortamos en el primer commit de merge que aparezca.
+  let raw;
+  try {
+    raw = execSync(
+      `git log --first-parent origin/${rama} --date-order --pretty=format:"%H${SEP1}%P${SEP1}%s${SEP2}"`,
+      { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
+    );
+  } catch {
+    return [];
+  }
+  const registros = raw.split(SEP2).map((r) => r.trim()).filter(Boolean).map((rec) => {
+    const [hash, parents, subject] = rec.split(SEP1);
+    return { hash, parents: (parents || '').trim().split(/\s+/).filter(Boolean), subject: (subject || '').trim() };
+  });
+  registros.reverse(); // de mas viejo a mas nuevo
+  const resultado = [];
+  for (const c of registros) {
+    if (c.parents.length > 1) break; // primer merge: de aqui en adelante ya no es solo main
+    resultado.push({ hash: c.hash, subject: c.subject });
+  }
+  return resultado;
 }
 
 function commitsRaiz(rama) {
@@ -169,10 +248,13 @@ function evaluarRama(paso) {
     return { existe: true, completo: false, commits: [] };
   }
 
-  let crudos = commitsUniqueTo(paso.rama, paso.ramaBase);
-  if (!paso.ramaBase) {
+  let crudos;
+  if (paso.ramaBase) {
+    crudos = commitsUniqueTo(paso.rama, paso.ramaBase);
+  } else {
     // La rama sin base (main) incluye el commit semilla que GitHub Classroom
     // genera automaticamente al crear el repo desde la plantilla.
+    crudos = commitsIniciales(paso.rama);
     const raices = new Set(commitsRaiz(paso.rama));
     crudos = crudos.filter((c) => !raices.has(c.hash));
   }

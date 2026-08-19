@@ -54,7 +54,7 @@ Puedes revisar tu árbol de commits en cualquier momento, sin esperar a que corr
 **[Bitácora de Ramas](https://claude.ai/code/artifact/9bff345d-9bf7-4ca5-a74f-9c5d69f77306)** — pega ahí la salida de:
 
 ```
-git log --all --topo-order --pretty=format:"%H|%P|%D|%s"
+git log --all --topo-order --pretty=format:"%H%x1f%P%x1f%D%x1f%B%x1e"
 ```
 
 y vas a ver tu árbol dibujado y comparado contra el diagrama objetivo del taller, con el mismo detalle de errores que te daría el bot en los Issues.
