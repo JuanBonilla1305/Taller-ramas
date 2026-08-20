@@ -106,9 +106,9 @@
       "cuerpoIssue": "Integra `feature/estilos` en `main`, también con merge commit real.\n\n1. `git checkout main`\n2. `git merge --no-ff feature/estilos -m \"merge: integra los estilos del sitio en main\"` (debe incluir la palabra **estilos**).\n3. Resuelve conflictos si aparecen y termina el merge.\n4. `git push origin main`"
     },
     {
-      "id": "contenido-footer",
+      "id": "footer-crear",
       "tipo": "rama",
-      "rama": "feature/contenido",
+      "rama": "feature/footer",
       "ramaBase": "main",
       "commitsDesde": 0,
       "commitsMinimos": 3,
@@ -116,64 +116,64 @@
       "tiposPermitidos": ["feat"],
       "patronArchivo": "\\.html$",
       "requiere": ["merge-estructura", "merge-estilos"],
-      "tituloIssue": "Paso 9/15 — Rama feature/contenido: footer",
-      "cuerpoIssue": "Con `main` ya integrado (estructura + estilos), crea `feature/contenido` con **3 commits reales** (`feat`, palabra clave **footer**, tocando `.html`).\n\n1. `git checkout main && git checkout -b feature/contenido`\n2. 3 commits.\n3. `git push origin feature/contenido`\n\n**Esta rama va a acumular varias secciones en los próximos pasos — no la mergees.**"
+      "tituloIssue": "Paso 9/15 — Rama feature/footer",
+      "cuerpoIssue": "Con `main` ya integrado (estructura + estilos), crea `feature/footer` con **3 commits reales** (`feat`, palabra clave **footer**, tocando `.html`).\n\n1. `git checkout main && git checkout -b feature/footer`\n2. 3 commits.\n3. `git push origin feature/footer`\n\n**Esta rama no se integra en el taller** — se queda sin mergear."
     },
     {
-      "id": "contenido-galeria",
+      "id": "galeria-crear",
       "tipo": "rama",
-      "rama": "feature/contenido",
+      "rama": "feature/galeria",
       "ramaBase": "main",
-      "commitsDesde": 3,
+      "commitsDesde": 0,
       "commitsMinimos": 3,
       "palabraClave": "galeria",
       "tiposPermitidos": ["feat"],
       "patronArchivo": "\\.(html|css)$",
-      "requiere": ["contenido-footer"],
-      "tituloIssue": "Paso 10/15 — feature/contenido: galería",
-      "cuerpoIssue": "Sigue en **la misma rama `feature/contenido`**: agrega **3 commits más** (`feat`, palabra clave **galeria**, tocando `.html` o `.css`).\n\n1. `git checkout feature/contenido`\n2. 3 commits.\n3. `git push origin feature/contenido`"
+      "requiere": ["merge-estructura", "merge-estilos"],
+      "tituloIssue": "Paso 10/15 — Rama feature/galeria",
+      "cuerpoIssue": "Desde `main`, crea `feature/galeria` con **3 commits reales** (`feat`, palabra clave **galeria**, tocando `.html` o `.css`).\n\n1. `git checkout main && git checkout -b feature/galeria`\n2. 3 commits.\n3. `git push origin feature/galeria`\n\n**Esta rama no se integra en el taller** — se queda sin mergear."
     },
     {
-      "id": "contenido-testimonios",
+      "id": "testimonios-crear",
       "tipo": "rama",
-      "rama": "feature/contenido",
+      "rama": "feature/testimonios",
       "ramaBase": "main",
-      "commitsDesde": 6,
+      "commitsDesde": 0,
       "commitsMinimos": 3,
       "palabraClave": "testimonios",
       "tiposPermitidos": ["feat"],
       "patronArchivo": "\\.html$",
-      "requiere": ["contenido-galeria"],
-      "tituloIssue": "Paso 11/15 — feature/contenido: testimonios",
-      "cuerpoIssue": "Sigue en **la misma rama `feature/contenido`**: agrega **3 commits más** (`feat`, palabra clave **testimonios**, tocando `.html`).\n\n1. `git checkout feature/contenido`\n2. 3 commits.\n3. `git push origin feature/contenido`"
+      "requiere": ["merge-estructura", "merge-estilos"],
+      "tituloIssue": "Paso 11/15 — Rama feature/testimonios",
+      "cuerpoIssue": "Desde `main`, crea `feature/testimonios` con **3 commits reales** (`feat`, palabra clave **testimonios**, tocando `.html`).\n\n1. `git checkout main && git checkout -b feature/testimonios`\n2. 3 commits.\n3. `git push origin feature/testimonios`\n\n**Esta rama no se integra en el taller** — se queda sin mergear."
     },
     {
-      "id": "contenido-contacto",
+      "id": "contacto-crear",
       "tipo": "rama",
-      "rama": "feature/contenido",
+      "rama": "feature/contacto-precios",
       "ramaBase": "main",
-      "commitsDesde": 9,
+      "commitsDesde": 0,
       "commitsMinimos": 2,
       "palabraClave": "contacto",
       "tiposPermitidos": ["feat"],
       "patronArchivo": "\\.html$",
-      "requiere": ["contenido-testimonios"],
-      "tituloIssue": "Paso 12/15 — feature/contenido: contacto",
-      "cuerpoIssue": "Sigue en **la misma rama `feature/contenido`**: agrega **2 commits más** (`feat`, palabra clave **contacto**, tocando `.html`).\n\n1. `git checkout feature/contenido`\n2. 2 commits.\n3. `git push origin feature/contenido`"
+      "requiere": ["merge-estructura", "merge-estilos"],
+      "tituloIssue": "Paso 12/15 — Rama feature/contacto-precios: contacto",
+      "cuerpoIssue": "Desde `main`, crea `feature/contacto-precios` con **2 commits reales** (`feat`, palabra clave **contacto**, tocando `.html`).\n\n1. `git checkout main && git checkout -b feature/contacto-precios`\n2. 2 commits.\n3. `git push origin feature/contacto-precios`\n\n**Esta rama va a acumular otra tanda en el próximo paso — no la mergees.**"
     },
     {
-      "id": "contenido-precios",
+      "id": "precios-crear",
       "tipo": "rama",
-      "rama": "feature/contenido",
+      "rama": "feature/contacto-precios",
       "ramaBase": "main",
-      "commitsDesde": 11,
+      "commitsDesde": 2,
       "commitsMinimos": 2,
       "palabraClave": "precios",
       "tiposPermitidos": ["feat"],
       "patronArchivo": "\\.html$",
-      "requiere": ["contenido-contacto"],
-      "tituloIssue": "Paso 13/15 — feature/contenido: precios",
-      "cuerpoIssue": "Sigue en **la misma rama `feature/contenido`**: agrega **2 commits más** (`feat`, palabra clave **precios**, tocando `.html`).\n\n1. `git checkout feature/contenido`\n2. 2 commits.\n3. `git push origin feature/contenido`\n\n**Esta rama se queda sin mergear** — como `feature/interactividad`, es una rama real que se queda en revisión."
+      "requiere": ["contacto-crear"],
+      "tituloIssue": "Paso 13/15 — feature/contacto-precios: precios",
+      "cuerpoIssue": "Sigue en **la misma rama `feature/contacto-precios`**: agrega **2 commits más** (`feat`, palabra clave **precios**, tocando `.html`).\n\n1. `git checkout feature/contacto-precios`\n2. 2 commits.\n3. `git push origin feature/contacto-precios`\n\n**Esta rama se queda sin mergear** — como `feature/interactividad`, `feature/footer`, `feature/galeria` y `feature/testimonios`, son ramas reales que se quedan en revisión."
     },
     {
       "id": "interactividad-mejoras",
@@ -201,7 +201,7 @@
       "patronArchivo": "\\.js$",
       "requiere": ["interactividad-mejoras"],
       "tituloIssue": "Paso 15/15 — feature/interactividad: optimización",
-      "cuerpoIssue": "Último paso, sigue en **la misma rama `feature/interactividad`**: agrega **2 commits más** (`feat`/`fix`, palabra clave **optimizacion**, tocando `.js`).\n\n1. `git checkout feature/interactividad`\n2. 2 commits.\n3. `git push origin feature/interactividad`\n\nCon esto se cierra el taller: 5 ramas (`main` + 4), 15 tareas, 2 merges reales."
+      "cuerpoIssue": "Último paso, sigue en **la misma rama `feature/interactividad`**: agrega **2 commits más** (`feat`/`fix`, palabra clave **optimizacion**, tocando `.js`).\n\n1. `git checkout feature/interactividad`\n2. 2 commits.\n3. `git push origin feature/interactividad`\n\nCon esto se cierra el taller: 8 ramas (`main` + 7), 15 tareas, 2 merges reales."
     }
   ]
 }
