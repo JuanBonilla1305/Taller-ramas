@@ -51,7 +51,7 @@ Reglas que se revisan automáticamente en cada tarea:
 
 Puedes revisar tu árbol de commits en cualquier momento, sin esperar a que corra el workflow, con esta herramienta:
 
-**[Bitácora de Ramas](https://claude.ai/code/artifact/9bff345d-9bf7-4ca5-a74f-9c5d69f77306)** — corre el comando que te muestra la página (mejor si lo mandas directo al portapapeles con `Set-Clipboard`/`pbcopy`/`xclip`, en vez de copiarlo a mano de la terminal) y pégalo ahí.
+**[Bitácora de Ramas](https://juanbonilla1305.github.io/Taller-ramas/)** — corre el comando que te muestra la página (mejor si lo mandas directo al portapapeles con `Set-Clipboard`/`pbcopy`/`xclip`, en vez de copiarlo a mano de la terminal) y pégalo ahí.
 
 Vas a ver tu árbol dibujado y comparado contra el diagrama objetivo del taller, con el mismo detalle de errores que te daría el bot en los Issues.
 
