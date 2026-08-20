@@ -1,5 +1,18 @@
 # Taller de árboles de commits
 
+## Cómo empezar (antes del Paso 1)
+
+Este repositorio es una **plantilla**: no trabajes directamente aquí, primero haz tu propia copia.
+
+1. Arriba de esta página en GitHub, haz clic en el botón verde **"Use this template"** → **"Create a new repository"**.
+2. Ponle el nombre que quieras a tu copia (pública o privada, como prefieras) y dale a **"Create repository"**. GitHub te crea un repositorio nuevo, con tu usuario, con todos estos archivos ya copiados adentro.
+3. Ahora trae ese repositorio a tu computador. Entra a tu repositorio nuevo, haz clic en el botón verde **"Code"** y copia el link (algo como `https://github.com/tu-usuario/nombre-de-tu-repo.git`). Abre una terminal en la carpeta donde quieras trabajar y escribe:
+   `git clone https://github.com/tu-usuario/nombre-de-tu-repo.git`
+   (cambia esa URL por la que copiaste de tu propio repositorio).
+4. Entra a la carpeta que se acaba de crear — **de aquí en adelante, todos los comandos de git del taller los corres dentro de esta carpeta**:
+   `cd nombre-de-tu-repo`
+5. Ve a la pestaña **Issues** de **tu** repositorio (no de esta plantilla) — ahí está la tarea 1/15.
+
 ## Qué vas a construir
 
 Una **página web real, con contenido real** — el tema lo eliges tú (un portafolio, la página de un producto inventado, una guía sobre algo que te interese, lo que quieras). Puede ser tan simple como quieras en diseño, pero **no puede ser un "Hola Mundo" ni una plantilla vacía**: debe tener secciones, texto e interacción que de verdad correspondan a una idea concreta.
