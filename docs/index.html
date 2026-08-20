@@ -1,0 +1,1051 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitácora de Ramas</title>
+</head>
+<body>
+<style>
+  :root {
+    --bg: #faf6ee;
+    --surface: #ffffff;
+    --surface-sunken: #f4eee0;
+    --ink: #1e2a32;
+    --ink-soft: #5b6b72;
+    --border: #e6dcc6;
+    --panel-border: #2f8f86;
+    --accent: #2f8f86;
+    --accent-ink: #ffffff;
+    --focus: #2f8f86;
+
+    --ok: #2f8f5b;
+    --ok-bg: #e4f3e9;
+    --pending: #c98a1d;
+    --pending-bg: #fbf0da;
+    --err: #c24b3f;
+    --err-bg: #fbeae7;
+
+    --lane-0: #1b3a5c;
+    --lane-1: #2f8f86;
+    --lane-2: #f0b23e;
+    --lane-3: #8a6fb0;
+    --lane-4: #c24b3f;
+    --lane-5: #4f8fc4;
+    --lane-6: #7c9a3e;
+    --lane-7: #c46f9e;
+    --lane-8: #3d8f6b;
+    --lane-9: #d98a3d;
+    --lane-10: #6b7a99;
+    --lane-extra: #9a9186;
+
+    --font-display: system-ui, -apple-system, "SF Pro Text", "Segoe UI", sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+
+    --shadow-card: 0 6px 20px rgba(30, 42, 50, 0.07), 0 1px 3px rgba(30, 42, 50, 0.06);
+  }
+
+  /* Esta pagina se queda siempre en claro a proposito (pedido explicito del
+     usuario) — no sigue el tema oscuro del sistema ni el del visor. */
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-display);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .hero { display: flex; flex-direction: column; gap: 0.6rem; max-width: 62ch; }
+  .title-chip {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+    padding: 0.3rem 0.8rem;
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--ink);
+  }
+  .eyebrow { margin: 0; }
+  h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+  .lede { margin: 0; color: var(--ink-soft); font-size: 1.02rem; line-height: 1.5; text-wrap: balance; }
+
+  .panel {
+    background: var(--surface);
+    border: 2px solid var(--panel-border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-card);
+  }
+
+  .command-box p { margin: 0 0 0.6rem; color: var(--ink-soft); font-size: 0.92rem; }
+  .cmd-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.15rem 0.15rem 0.15rem 0.9rem;
+    overflow-x: auto;
+    margin-bottom: 0.7rem;
+  }
+  .cmd-row code {
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    white-space: pre;
+    align-self: center;
+    color: var(--ink);
+  }
+  .cmd-row button {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  button {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.88rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: 0 2px 6px rgba(30, 42, 50, 0.12);
+    transition: transform 100ms ease-out, opacity 150ms ease, box-shadow 150ms ease;
+  }
+  button:hover { opacity: 0.92; }
+  button:active { transform: scale(0.97); }
+  button.secondary {
+    background: var(--surface);
+    color: var(--ink);
+    border-color: var(--panel-border);
+    box-shadow: none;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .input-panel { display: flex; flex-direction: column; gap: 0.75rem; position: sticky; top: 1.5rem; }
+  .input-panel label { font-size: 0.85rem; font-weight: 600; color: var(--ink-soft); }
+  textarea {
+    width: 100%;
+    min-height: 160px;
+    resize: vertical;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    background: var(--surface-sunken);
+    color: var(--ink);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 0.7rem;
+  }
+
+  #global-status { font-size: 0.85rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .progress-bar {
+    height: 7px;
+    border-radius: 999px;
+    background: var(--surface-sunken);
+    overflow: hidden;
+    margin-top: 0.35rem;
+  }
+  .progress-bar > div { height: 100%; background: var(--accent); border-radius: inherit; transition: width 0.3s ease; }
+
+  .warning-banner {
+    background: var(--err-bg);
+    color: var(--err);
+    border: 1.5px solid var(--err);
+    border-radius: 12px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+  .checklist li {
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 0.7rem 0.85rem;
+    background: var(--surface-sunken);
+  }
+  .step-head { display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; font-weight: 600; }
+  .lane-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 1.5px var(--surface); }
+  .step-branch { font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-soft); font-weight: 400; margin-left: auto; }
+  .pill {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .pill.ok { background: var(--ok-bg); color: var(--ok); }
+  .pill.pending { background: var(--pending-bg); color: var(--pending); }
+  .pill.locked { background: var(--surface); color: var(--ink-soft); border: 1px solid var(--border); }
+
+  .step-detail { margin: 0.4rem 0 0; font-size: 0.78rem; color: var(--ink-soft); }
+  .error-list { margin: 0.35rem 0 0; padding-left: 1.1rem; font-size: 0.76rem; color: var(--err); }
+  .error-list li { margin-bottom: 0.15rem; }
+
+  .graph-panel .title-chip { margin-bottom: 0.9rem; }
+  .graph-panel .title-chip:not(:first-child) { margin-top: 1.75rem; }
+  .graph-scroll {
+    overflow-x: auto;
+    background: var(--surface-sunken);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+  }
+  svg { display: block; font-family: var(--font-display); }
+  svg text { fill: var(--ink); }
+  svg .lane-label { font-size: 11.5px; font-weight: 600; fill: var(--ink-soft); }
+  svg .node-index { font-size: 9px; font-weight: 700; }
+  svg .flow-label { font-size: 10.5px; font-weight: 700; font-style: italic; }
+  svg .commit-hash { font-size: 9px; fill: var(--ink-soft); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-top: 0.9rem; font-size: 0.78rem; color: var(--ink-soft); }
+  .legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .legend .swatch { width: 11px; height: 11px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 1.5px var(--surface); }
+
+  .empty-hint { font-size: 0.85rem; color: var(--ink-soft); padding: 0.5rem 0; }
+</style>
+
+<div class="page">
+  <header class="hero">
+    <p class="eyebrow title-chip">Taller de árboles de commits</p>
+    <h1>Bitácora de Ramas</h1>
+    <p class="lede">
+      Pega el registro de tu repositorio y compara, al instante, tu árbol de commits contra el objetivo del taller.
+      Todo se procesa en tu navegador — nada se envía a ningún servidor.
+    </p>
+  </header>
+
+  <section class="command-box">
+    <p>Corre este comando en la raíz de tu repositorio (con tus ramas y tags ya creados) y copia toda la salida:</p>
+    <div class="cmd-row">
+      <code id="cmd-text">git log --all --topo-order --pretty=format:"%H@@F@@%P@@F@@%D@@F@@%B@@R@@"</code>
+      <button type="button" class="secondary" id="copy-btn">Copiar</button>
+    </div>
+    <p class="empty-hint">
+      Mejor aún: no selecciones el texto a mano en la terminal — con historiales largos es facilísimo que se corte a
+      media línea sin que lo notes. Manda la salida directo al portapapeles con uno de estos:
+    </p>
+    <div class="cmd-row">
+      <code id="cmd-text-ps">git log --all --topo-order --pretty=format:"%H@@F@@%P@@F@@%D@@F@@%B@@R@@" | Set-Clipboard</code>
+      <button type="button" class="secondary" id="copy-btn-ps">Copiar (PowerShell)</button>
+    </div>
+    <div class="cmd-row">
+      <code id="cmd-text-mac">git log --all --topo-order --pretty=format:"%H@@F@@%P@@F@@%D@@F@@%B@@R@@" | pbcopy</code>
+      <button type="button" class="secondary" id="copy-btn-mac">Copiar (macOS)</button>
+    </div>
+    <div class="cmd-row">
+      <code id="cmd-text-linux">git log --all --topo-order --pretty=format:"%H@@F@@%P@@F@@%D@@F@@%B@@R@@" | xclip -selection clipboard</code>
+      <button type="button" class="secondary" id="copy-btn-linux">Copiar (Linux)</button>
+    </div>
+    <p class="empty-hint">Después solo pega (Ctrl+V) directo en el cuadro de abajo. Nota: aquí solo se confirma que el tag existe; el contenido de su mensaje (`git tag -a`) solo se valida en GitHub.</p>
+  </section>
+
+  <div class="layout">
+    <aside class="panel input-panel">
+      <label for="log-input">Salida del comando</label>
+      <textarea id="log-input" placeholder="Pega aquí la salida completa..."></textarea>
+      <button type="button" id="analyze-btn">Analizar mi árbol</button>
+
+      <div id="global-status"></div>
+
+      <div id="warning-area"></div>
+
+      <ol class="checklist" id="checklist"></ol>
+    </aside>
+
+    <main class="panel graph-panel">
+      <p class="title-chip">Diagrama objetivo del taller</p>
+      <div class="graph-scroll"><svg id="target-svg" role="img" aria-label="Diagrama objetivo del árbol de commits"></svg></div>
+      <div class="legend" id="legend-target"></div>
+
+      <p class="title-chip">Tu árbol actual</p>
+      <div class="graph-scroll" id="actual-scroll">
+        <svg id="actual-svg" role="img" aria-label="Tu árbol de commits actual"></svg>
+      </div>
+      <p class="empty-hint" id="actual-empty">Pega la salida del comando y presiona "Analizar mi árbol" para verlo aquí.</p>
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const PASOS = [
+    { id: "main-setup", tipo: "rama", rama: "main", ramaBase: null, commitsDesde: 0, commitsMinimos: 2, palabraClave: "base",
+      tiposPermitidos: ["chore", "docs"], requiere: [], etiqueta: "Tarea 1/15 · main" },
+    { id: "estructura-crear", tipo: "rama", rama: "feature/estructura", ramaBase: "main", commitsDesde: 0, commitsMinimos: 3, palabraClave: "estructura",
+      tiposPermitidos: ["feat"], requiere: ["main-setup"], etiqueta: "Tarea 2/15 · feature/estructura" },
+    { id: "estilos-crear", tipo: "rama", rama: "feature/estilos", ramaBase: "main", commitsDesde: 0, commitsMinimos: 3, palabraClave: "estilos",
+      tiposPermitidos: ["feat", "style"], requiere: ["main-setup"], etiqueta: "Tarea 3/15 · feature/estilos" },
+    { id: "interactividad-crear", tipo: "rama", rama: "feature/interactividad", ramaBase: "main", commitsDesde: 0, commitsMinimos: 3, palabraClave: "interactividad",
+      tiposPermitidos: ["feat", "fix"], requiere: ["main-setup"], etiqueta: "Tarea 4/15 · feature/interactividad" },
+    { id: "estructura-formulario", tipo: "rama", rama: "feature/estructura", ramaBase: "main", commitsDesde: 3, commitsMinimos: 2, palabraClave: "formulario",
+      tiposPermitidos: ["feat"], requiere: ["estructura-crear"], etiqueta: "Tarea 5/15 · feature/estructura (+formulario)" },
+    { id: "merge-estructura", tipo: "merge", ramaOrigen: "feature/estructura", ramaDestino: "main", palabraClave: "estructura",
+      requiere: ["estructura-formulario"], etiqueta: "Tarea 6/15 · merge estructura → main" },
+    { id: "estilos-responsive", tipo: "rama", rama: "feature/estilos", ramaBase: "main", commitsDesde: 3, commitsMinimos: 2, palabraClave: "responsive",
+      tiposPermitidos: ["feat", "style"], requiere: ["estilos-crear"], etiqueta: "Tarea 7/15 · feature/estilos (+responsive)" },
+    { id: "merge-estilos", tipo: "merge", ramaOrigen: "feature/estilos", ramaDestino: "main", palabraClave: "estilos",
+      requiere: ["estilos-responsive", "merge-estructura"], etiqueta: "Tarea 8/15 · merge estilos → main" },
+    { id: "footer-crear", tipo: "rama", rama: "feature/footer", ramaBase: "main", commitsDesde: 0, commitsMinimos: 3, palabraClave: "footer",
+      tiposPermitidos: ["feat"], requiere: ["merge-estructura", "merge-estilos"], etiqueta: "Tarea 9/15 · feature/footer" },
+    { id: "galeria-crear", tipo: "rama", rama: "feature/galeria", ramaBase: "main", commitsDesde: 0, commitsMinimos: 3, palabraClave: "galeria",
+      tiposPermitidos: ["feat"], requiere: ["merge-estructura", "merge-estilos"], etiqueta: "Tarea 10/15 · feature/galeria" },
+    { id: "testimonios-crear", tipo: "rama", rama: "feature/testimonios", ramaBase: "main", commitsDesde: 0, commitsMinimos: 3, palabraClave: "testimonios",
+      tiposPermitidos: ["feat"], requiere: ["merge-estructura", "merge-estilos"], etiqueta: "Tarea 11/15 · feature/testimonios" },
+    { id: "contacto-crear", tipo: "rama", rama: "feature/contacto-precios", ramaBase: "main", commitsDesde: 0, commitsMinimos: 2, palabraClave: "contacto",
+      tiposPermitidos: ["feat"], requiere: ["merge-estructura", "merge-estilos"], etiqueta: "Tarea 12/15 · feature/contacto-precios (contacto)" },
+    { id: "precios-crear", tipo: "rama", rama: "feature/contacto-precios", ramaBase: "main", commitsDesde: 2, commitsMinimos: 2, palabraClave: "precios",
+      tiposPermitidos: ["feat"], requiere: ["contacto-crear"], etiqueta: "Tarea 13/15 · feature/contacto-precios (precios)" },
+    { id: "interactividad-mejoras", tipo: "rama", rama: "feature/interactividad", ramaBase: "main", commitsDesde: 3, commitsMinimos: 2, palabraClave: "mejoras",
+      tiposPermitidos: ["feat", "fix"], requiere: ["interactividad-crear"], etiqueta: "Tarea 14/15 · feature/interactividad (mejoras)" },
+    { id: "interactividad-optimizacion", tipo: "rama", rama: "feature/interactividad", ramaBase: "main", commitsDesde: 5, commitsMinimos: 2, palabraClave: "optimizacion",
+      tiposPermitidos: ["feat", "fix"], requiere: ["interactividad-mejoras"], etiqueta: "Tarea 15/15 · feature/interactividad (optimizacion)" },
+  ];
+
+  const RAMA_STEPS = PASOS.filter((p) => p.tipo === "rama");
+  // Nombres de rama unicos, en orden de aparicion (varias tareas comparten rama).
+  const NOMBRES_RAMA = [];
+  RAMA_STEPS.forEach((p) => { if (!NOMBRES_RAMA.includes(p.rama)) NOMBRES_RAMA.push(p.rama); });
+  const LANE_COLOR_VAR = ["--lane-0", "--lane-1", "--lane-2", "--lane-3", "--lane-4", "--lane-5", "--lane-6", "--lane-7", "--lane-8", "--lane-9", "--lane-10"];
+
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  // ---------- Validación de mensajes (misma regla que el workflow de Actions) ----------
+
+  const PALABRAS_GENERICAS = new Set([
+    "update", "updates", "cambios", "cambio", "fix", "fixes", "wip",
+    "prueba", "pruebas", "test", "tests", "testing", "commit", "commits",
+    "misc", "varios", "ajustes", "ajuste", "correccion", "correcciones",
+    "arreglo", "arreglos", "trabajo", "avance", "avances", "sin",
+    "descripcion", "nuevo", "nueva", "cosas", "cosa", "cambie", "agregue",
+  ]);
+  const MAPA_ACENTOS = { "á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u", "ü": "u", "ñ": "n" };
+
+  function normalizar(texto) {
+    return texto
+      .toLowerCase()
+      .split("")
+      .map((ch) => MAPA_ACENTOS[ch] || ch)
+      .join("")
+      .replace(/[^a-z0-9\s]/g, " ")
+      .trim();
+  }
+
+  function validarMensaje(subject, paso) {
+    const errores = [];
+    const m = subject.match(/^([a-z]+)(\([a-z0-9][a-z0-9-]*\))?:\s*(.+)$/);
+    if (!m) {
+      errores.push('No sigue el formato "tipo(alcance opcional): descripción" (Conventional Commits).');
+      return { valid: false, errores };
+    }
+    const tipo = m[1];
+    const descripcion = m[3].trim();
+
+    if (!paso.tiposPermitidos.includes(tipo)) {
+      errores.push(`Tipo "${tipo}" no permitido aquí. Usa uno de: ${paso.tiposPermitidos.join(", ")}.`);
+    }
+    if (descripcion.length < 20) {
+      errores.push("La descripción es muy corta (mínimo 20 caracteres) para considerarse un cambio real.");
+    }
+    const keywordRe = new RegExp(`\\b${paso.palabraClave}\\b`, "i");
+    if (!keywordRe.test(subject)) {
+      errores.push(`Falta la palabra clave "${paso.palabraClave}" en el mensaje.`);
+    }
+    const normalizado = normalizar(descripcion);
+    const sinPalabraClave = normalizado.replace(new RegExp(paso.palabraClave.toLowerCase(), "g"), "");
+    const palabras = sinPalabraClave.split(/\s+/).filter(Boolean);
+    const significativas = palabras.filter((w) => !PALABRAS_GENERICAS.has(w) && w.length > 2);
+    if (significativas.length < 3) {
+      errores.push("El mensaje parece genérico. Describe qué hiciste concretamente.");
+    }
+    return { valid: errores.length === 0, errores };
+  }
+
+  function validarComoRama(crudos, paso) {
+    const vistos = new Map();
+    return crudos.map((c) => {
+      const r = validarMensaje(c.subject, paso);
+      let valid = r.valid;
+      const errores = r.errores.slice();
+      const clave = c.subject.trim().toLowerCase();
+      if (vistos.has(clave)) {
+        valid = false;
+        errores.push("Mensaje idéntico al de otro commit de esta misma rama.");
+      } else {
+        vistos.set(clave, true);
+      }
+      return Object.assign({}, c, { valid, errores });
+    });
+  }
+
+  // ---------- Parseo del log pegado ----------
+  // Formato esperado: git log --all --topo-order --pretty=format:"%H@@F@@%P@@F@@%D@@F@@%B@@R@@"
+  //
+  // Primero usamos separadores invisibles (\x1f/\x1e, los que git usa
+  // internamente): no sobrevivian el copiado manual desde la terminal.
+  // Despues probamos "§§F§§/§§R§§" (visibles pero no-ASCII): tampoco
+  // sobrevivian consistentemente el viaje terminal -> portapapeles de
+  // Windows/PowerShell (problemas de codificacion con caracteres fuera de
+  // ASCII). Usamos marcadores 100% ASCII, inmunes a ambos problemas.
+
+  const SEP1 = "@@F@@";
+  const SEP2 = "@@R@@";
+
+  function parseLog(text) {
+    const registros = text.split(SEP2).map((r) => r.replace(/^\s+/, "")).filter((r) => r.trim());
+    const merges = [];
+    const commits = registros.map((rec) => {
+      const i1 = rec.indexOf(SEP1);
+      const i2 = i1 < 0 ? -1 : rec.indexOf(SEP1, i1 + SEP1.length);
+      const i3 = i2 < 0 ? -1 : rec.indexOf(SEP1, i2 + SEP1.length);
+      if (i1 < 0 || i2 < 0 || i3 < 0) return null;
+      const hash = rec.slice(0, i1);
+      const parentsRaw = rec.slice(i1 + SEP1.length, i2).trim();
+      const refsRaw = rec.slice(i2 + SEP1.length, i3);
+      const body = rec.slice(i3 + SEP1.length).replace(/\s+$/, "");
+      const parentsAll = parentsRaw ? parentsRaw.split(/\s+/).filter(Boolean) : [];
+      if (parentsAll.length > 1) merges.push(hash);
+      const subject = (body.split("\n")[0] || "").trim();
+      const refsTokens = refsRaw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((tok) => (tok.startsWith("HEAD -> ") ? tok.slice(8) : tok));
+      const refs = refsTokens.filter((tok) => tok && tok !== "HEAD" && !tok.startsWith("origin/") && !tok.startsWith("tag: "));
+      const tags = refsTokens.filter((tok) => tok.startsWith("tag: ")).map((tok) => tok.slice(5));
+      return { hash, parent: parentsAll[0] || null, parentsAll, subject, body, refs, tags };
+    }).filter(Boolean);
+    commits.reverse(); // de más viejo a más nuevo
+    return { commits, merges };
+  }
+
+  function construirModelo(text) {
+    const { commits, merges } = parseLog(text);
+    const commitMap = new Map(commits.map((c) => [c.hash, c]));
+    const xIndex = new Map(commits.map((c, i) => [c.hash, i]));
+    const tipMap = {};
+    const tagMap = {};
+    commits.forEach((c) => {
+      c.refs.forEach((r) => { tipMap[r] = c.hash; });
+      c.tags.forEach((t) => { tagMap[t] = c.hash; });
+    });
+
+    const claimed = new Map();
+    const estadoPorPaso = {};
+    const commitsPorRama = {};
+
+    // Varias tareas pueden compartir la misma rama (ej. feature/contenido
+    // acumula footer, galeria, testimonios...). Primero calculamos, UNA vez
+    // por rama, la lista completa de sus commits propios (de mas viejo a mas
+    // nuevo); luego cada tarea saca su propia porcion con commitsDesde +
+    // su palabra clave.
+    NOMBRES_RAMA.forEach((ramaNombre) => {
+      const pasoRef = RAMA_STEPS.find((p) => p.rama === ramaNombre);
+      const tipHash = tipMap[ramaNombre];
+      if (!tipHash) {
+        commitsPorRama[ramaNombre] = { existe: false, collected: [], semilla: [], forkParentHash: null };
+        return;
+      }
+      const collected = [];
+      let semilla = [];
+      let forkParentHash = null;
+      if (!pasoRef.ramaBase) {
+        // main-setup: un `git log` sin acotar arrastraria para siempre todo lo
+        // que ya se fusiono ahi despues (se detecto probando contra el repo de
+        // prueba ya mergeado: nunca volvia a validar como completo). Caminamos
+        // hacia atras completo, pero al reordenar de mas viejo a mas nuevo nos
+        // quedamos solo con lo anterior al primer merge cronologico: eso es lo
+        // que el estudiante hizo antes de crear cualquier rama.
+        const secuencia = [];
+        let c = tipHash;
+        while (c) {
+          const node = commitMap.get(c);
+          if (!node) break;
+          secuencia.push(node.parentsAll.length > 1 ? { merge: true, hash: node.hash } : { merge: false, node });
+          c = node.parent;
+        }
+        secuencia.reverse();
+        // Reclamamos TODA la linea propia de main (antes y despues del primer
+        // merge) para que ningun commit suelto hecho directamente ahi (fuera
+        // de los pasos reconocidos) quede libre para que una rama posterior
+        // lo absorba de paso al caminar hacia atras. Solo lo anterior al
+        // primer merge cuenta para la validacion de este paso. Los commits de
+        // merge tambien se reclaman aqui (aunque no cuenten como contenido
+        // propio) para que una rama que nazca justo de un merge encuentre a
+        // que carril conectar su curva — si no, forkFrom no resuelve y la
+        // rama queda sin dibujar su conexion con main.
+        let vistoMerge = false;
+        for (const item of secuencia) {
+          if (item.merge) { vistoMerge = true; claimed.set(item.hash, ramaNombre); continue; }
+          claimed.set(item.node.hash, ramaNombre);
+          if (!vistoMerge) collected.push(item.node);
+        }
+        semilla = collected.filter((c) => c.parent === null);
+      } else {
+        let cur = tipHash;
+        const rawCollected = [];
+        while (cur && !claimed.has(cur)) {
+          const node = commitMap.get(cur);
+          if (!node) break;
+          if (node.parentsAll.length > 1) {
+            // Commit de merge: no es contenido propio de esta rama, pero seguimos
+            // por el primer padre para llegar a la historia previa.
+            cur = node.parent;
+            continue;
+          }
+          claimed.set(cur, ramaNombre);
+          rawCollected.push(node);
+          cur = node.parent;
+        }
+        rawCollected.reverse(); // de más viejo a más nuevo dentro de esta rama
+        collected.push(...rawCollected);
+        forkParentHash = collected.length ? collected[0].parent : null;
+      }
+
+      const utilizables = pasoRef.ramaBase ? collected : collected.filter((c) => c.parent !== null);
+      commitsPorRama[ramaNombre] = { existe: true, collected: utilizables, semilla, forkParentHash };
+    });
+
+    RAMA_STEPS.forEach((paso) => {
+      const info = commitsPorRama[paso.rama];
+      if (!info || !info.existe) {
+        estadoPorPaso[paso.id] = { existe: false, completo: false, commits: [], semilla: [] };
+        return;
+      }
+      // Tareas posteriores sobre la misma rama se saltan los commits que ya
+      // le tocaron a una tarea anterior (commitsDesde), y de ahi en adelante
+      // solo miran los commits que traen su propia palabra clave — asi una
+      // tanda nueva (ej. "galeria") no rompe retroactivamente la validacion
+      // de la tanda anterior (ej. "footer") en la misma rama.
+      const disponibles = info.collected.slice(paso.commitsDesde || 0);
+      const keywordRe = new RegExp(`\\b${paso.palabraClave}\\b`, "i");
+      const candidatos = disponibles.filter((c) => keywordRe.test(c.subject));
+      const commitsEval = validarComoRama(candidatos, paso);
+      const completo = commitsEval.length >= paso.commitsMinimos && commitsEval.every((c) => c.valid);
+      estadoPorPaso[paso.id] = {
+        existe: true, completo, commits: commitsEval,
+        semilla: info.semilla, forkParentHash: info.forkParentHash,
+      };
+    });
+
+    PASOS.filter((p) => p.tipo === "merge").forEach((paso) => {
+      const origenTip = tipMap[paso.ramaOrigen];
+      if (!origenTip) {
+        estadoPorPaso[paso.id] = { existe: false, completo: false, commits: [] };
+        return;
+      }
+      const mergeCommit = commits.find((c) => c.parentsAll.length > 1 && c.parentsAll.includes(origenTip));
+      if (!mergeCommit) {
+        estadoPorPaso[paso.id] = {
+          existe: true, completo: false,
+          commits: [{ hash: "", subject: "(sin commit de merge)", valid: false,
+            errores: ["No encuentro un commit de merge real: revisa que hayas usado git merge --no-ff."] }],
+        };
+        return;
+      }
+      const errores = [];
+      if (mergeCommit.subject.length < 20) errores.push("El mensaje del merge es muy corto.");
+      const kwRe = new RegExp(`\\b${paso.palabraClave}\\b`, "i");
+      if (!kwRe.test(mergeCommit.subject)) errores.push(`Falta la palabra clave "${paso.palabraClave}" en el mensaje del merge.`);
+      const valid = errores.length === 0;
+      estadoPorPaso[paso.id] = {
+        existe: true, completo: valid,
+        commits: [{ hash: mergeCommit.hash, subject: mergeCommit.subject, valid, errores }],
+        mergeHash: mergeCommit.hash, origenTip,
+      };
+    });
+
+    const extraLanes = [];
+    Object.keys(tipMap).forEach((branchName) => {
+      if (NOMBRES_RAMA.includes(branchName)) return;
+      let cur = tipMap[branchName];
+      const collected = [];
+      while (cur && !claimed.has(cur)) {
+        const node = commitMap.get(cur);
+        if (!node) break;
+        if (node.parentsAll.length > 1) { cur = node.parent; continue; }
+        collected.push(node);
+        claimed.set(cur, "extra:" + branchName);
+        cur = node.parent;
+      }
+      collected.reverse();
+      if (collected.length) extraLanes.push({ nombre: branchName, commits: collected, forkParentHash: collected[0].parent });
+    });
+
+    return { commitMap, xIndex, claimed, estadoPorPaso, commitsPorRama, extraLanes, merges, totalCommits: commits.length, tipMap, tagMap };
+  }
+
+  // ---------- Render SVG ----------
+
+  const ROW_H = 46;
+  const COL_W = 46;
+  const MARGIN_L = 150;
+  const MARGIN_T = 26;
+  const R = 9;
+
+  function svgTag(tag, attrs, parent) {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.keys(attrs || {}).forEach((k) => el.setAttribute(k, attrs[k]));
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+
+  function laneColor(idx) {
+    return idx >= 0 && idx < LANE_COLOR_VAR.length ? cssVar(LANE_COLOR_VAR[idx]) : cssVar("--lane-extra");
+  }
+
+  // modeloSvg: { lanes: [{ etiqueta, colorIdx, nodos: [...], forkFrom }], merges: [...] }
+  function renderGraph(svgEl, modeloSvg) {
+    const laneDefs = modeloSvg.lanes;
+    svgEl.innerHTML = "";
+    let maxX = 1;
+    laneDefs.forEach((l) => l.nodos.forEach((n) => { if (n.x > maxX) maxX = n.x; }));
+    (modeloSvg.merges || []).forEach((m) => { if (m.x > maxX) maxX = m.x; });
+    (modeloSvg.tags || []).forEach((t) => { if (t.x > maxX) maxX = t.x; });
+
+    const width = MARGIN_L + (maxX + 2) * COL_W;
+    const height = MARGIN_T * 2 + laneDefs.length * ROW_H + 14;
+    svgEl.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    svgEl.setAttribute("width", width);
+    svgEl.setAttribute("height", height);
+
+    const inkLine = cssVar("--ink");
+    const defs = svgTag("defs", {}, svgEl);
+    const marker = svgTag("marker", {
+      id: "arrowhead", viewBox: "0 0 10 10", refX: 8, refY: 5,
+      markerWidth: 6, markerHeight: 6, orient: "auto-start-reverse",
+    }, defs);
+    const arrowPath = svgTag("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: inkLine }, marker);
+    arrowPath.setAttribute("fill-opacity", "0.55");
+
+    const laneY = (idx) => MARGIN_T + 14 + idx * ROW_H;
+
+    // Cuando varias ramas nacen exactamente del mismo commit (ej. footer,
+    // galeria, testimonios y contacto-precios, todas desde main justo
+    // despues de los 2 merges), dibujar una curva diagonal por cada una
+    // hacia su fila hace que se crucen encima de las ramas intermedias
+    // (ej. la ultima commit de interactividad). En vez de eso, agrupamos
+    // las que comparten origen y dibujamos un solo "tronco" vertical en un
+    // carril vacio entre columnas, con ramales cortos hacia cada fila.
+    const gruposFork = new Map();
+    laneDefs.forEach((lane, i) => {
+      if (!lane.forkFrom) return;
+      const key = lane.forkFrom.laneIdx + ":" + lane.forkFrom.x;
+      if (!gruposFork.has(key)) gruposFork.set(key, []);
+      gruposFork.get(key).push(i);
+    });
+
+    gruposFork.forEach((idxs, key) => {
+      const [origenLaneIdx, origenX] = key.split(":").map(Number);
+      const x1 = MARGIN_L + origenX * COL_W;
+      const y1 = laneY(origenLaneIdx);
+
+      if (idxs.length === 1) {
+        const lane = laneDefs[idxs[0]];
+        const y = laneY(idxs[0]);
+        const x2 = MARGIN_L + (lane.nodos[0] ? lane.nodos[0].x : origenX + 1) * COL_W;
+        svgTag("path", {
+          d: `M ${x1} ${y1} C ${x1 + COL_W * 0.6} ${y1}, ${x2 - COL_W * 0.3} ${y}, ${x2 - R - 3} ${y}`,
+          fill: "none", stroke: inkLine, "stroke-opacity": 0.55, "stroke-width": 2.25, "stroke-linecap": "round",
+          "marker-end": "url(#arrowhead)",
+        }, svgEl);
+        return;
+      }
+
+      const trunkX = x1 + COL_W * 0.5;
+      const ys = idxs.map((i) => laneY(i));
+      const yMin = Math.min(y1, ...ys);
+      const yMax = Math.max(y1, ...ys);
+
+      svgTag("line", {
+        x1: trunkX, y1: yMin, x2: trunkX, y2: yMax,
+        stroke: inkLine, "stroke-opacity": 0.4, "stroke-width": 2, "stroke-linecap": "round",
+      }, svgEl);
+      svgTag("path", {
+        d: `M ${x1} ${y1} C ${x1 + 10} ${y1}, ${trunkX - 10} ${y1}, ${trunkX} ${y1}`,
+        fill: "none", stroke: inkLine, "stroke-opacity": 0.55, "stroke-width": 2.25, "stroke-linecap": "round",
+      }, svgEl);
+
+      idxs.forEach((i) => {
+        const lane = laneDefs[i];
+        const y = laneY(i);
+        const x2 = MARGIN_L + (lane.nodos[0] ? lane.nodos[0].x : origenX + 1) * COL_W;
+        svgTag("path", {
+          d: `M ${trunkX} ${y} C ${trunkX + 12} ${y}, ${x2 - COL_W * 0.3} ${y}, ${x2 - R - 3} ${y}`,
+          fill: "none", stroke: inkLine, "stroke-opacity": 0.55, "stroke-width": 2.25, "stroke-linecap": "round",
+          "marker-end": "url(#arrowhead)",
+        }, svgEl);
+      });
+    });
+
+    laneDefs.forEach((lane, i) => {
+      const y = laneY(i);
+      const color = laneColor(lane.colorIdx);
+
+      svgTag("line", { x1: MARGIN_L - 8, y1: y, x2: width - 10, y2: y, stroke: inkLine, "stroke-opacity": 0.06, "stroke-width": 1 }, svgEl);
+
+      const label = svgTag("text", { x: 10, y: y + 4, class: "lane-label" }, svgEl);
+      label.textContent = lane.etiqueta;
+
+      for (let k = 0; k < lane.nodos.length - 1; k++) {
+        const a = lane.nodos[k], b = lane.nodos[k + 1];
+        svgTag("line", {
+          x1: MARGIN_L + a.x * COL_W + R + 3, y1: y, x2: MARGIN_L + b.x * COL_W - R - 3, y2: y,
+          stroke: inkLine, "stroke-opacity": 0.55, "stroke-width": 2.25, "stroke-linecap": "round",
+          "stroke-dasharray": (a.isPlaceholder || b.isPlaceholder) ? "4 3" : "none",
+          "marker-end": "url(#arrowhead)",
+        }, svgEl);
+      }
+
+      lane.nodos.forEach((n, idx) => {
+        const cx = MARGIN_L + n.x * COL_W;
+        const circle = svgTag("circle", {
+          cx, cy: y, r: R,
+          fill: n.isPlaceholder ? "none" : color,
+          stroke: n.valid === false ? cssVar("--err") : cssVar("--surface"),
+          "stroke-width": n.valid === false ? 3 : 2,
+          "stroke-dasharray": n.isPlaceholder ? "3 2" : "none",
+        }, svgEl);
+        if (!n.isPlaceholder) {
+          const numTxt = svgTag("text", {
+            x: cx, y: y + 1, "text-anchor": "middle", "dominant-baseline": "central",
+            class: "node-index", fill: cssVar("--accent-ink"),
+          }, svgEl);
+          numTxt.textContent = String(idx + 1);
+          numTxt.style.pointerEvents = "none";
+        }
+        if (n.subject) {
+          const title = svgTag("title", {}, circle);
+          title.textContent = n.errores && n.errores.length ? `${n.subject}\n⚠ ${n.errores.join(" · ")}` : n.subject;
+        } else if (n.isPlaceholder) {
+          const title = svgTag("title", {}, circle);
+          title.textContent = "Commit pendiente";
+        }
+      });
+    });
+
+    // Merges: marcador en forma de diamante en la rama destino, con línea de convergencia
+    // y una etiqueta visible ("merge") junto a la flecha, como en el diagrama de referencia.
+    (modeloSvg.merges || []).forEach((m) => {
+      const y = laneY(m.laneIdx);
+      const cx = MARGIN_L + m.x * COL_W;
+      const color = m.valid ? cssVar("--ok") : cssVar("--err");
+      if (m.fromX != null && m.fromLaneIdx != null) {
+        const x1 = MARGIN_L + m.fromX * COL_W;
+        const y1 = laneY(m.fromLaneIdx);
+        svgTag("path", {
+          d: `M ${x1} ${y1} C ${x1 + COL_W * 0.6} ${y1}, ${cx - COL_W * 0.3} ${y}, ${cx - R - 4} ${y}`,
+          fill: "none", stroke: color, "stroke-width": 2.25, "stroke-dasharray": "1 4", "stroke-linecap": "round",
+          "marker-end": "url(#arrowhead)",
+        }, svgEl);
+        const label = svgTag("text", { x: (x1 + cx) / 2, y: (y1 + y) / 2 - 6, class: "flow-label", fill: color }, svgEl);
+        label.textContent = "merge";
+      }
+      const d = R + 3;
+      const diamante = svgTag("polygon", {
+        points: `${cx},${y - d} ${cx + d},${y} ${cx},${y + d} ${cx - d},${y}`,
+        fill: color, stroke: cssVar("--surface"), "stroke-width": 1.5,
+      }, svgEl);
+      const title = svgTag("title", {}, diamante);
+      title.textContent = (m.subject || "merge") + (m.errores && m.errores.length ? `\n⚠ ${m.errores.join(" · ")}` : "");
+    });
+
+  }
+
+  function renderLegend(container, lanes) {
+    container.innerHTML = "";
+    lanes.forEach((lane) => {
+      const span = document.createElement("span");
+      const dot = document.createElement("span");
+      dot.className = "swatch";
+      dot.style.background = laneColor(lane.colorIdx);
+      span.appendChild(dot);
+      span.appendChild(document.createTextNode(lane.etiqueta));
+      container.appendChild(span);
+    });
+  }
+
+  // ---------- Diagrama objetivo (sintético, fijo) ----------
+
+  function construirModeloObjetivo() {
+    const lanes = [
+      { colorIdx: 0, etiqueta: "main", forkFrom: null, nodos: [{ x: 0 }, { x: 1 }] },
+      { colorIdx: 1, etiqueta: "feature/estructura", forkFrom: { laneIdx: 0, x: 1 },
+        nodos: [{ x: 2 }, { x: 3 }, { x: 4 }, { x: 5 }, { x: 6 }] },
+      { colorIdx: 2, etiqueta: "feature/estilos", forkFrom: { laneIdx: 0, x: 1 },
+        nodos: [{ x: 2 }, { x: 3 }, { x: 4 }, { x: 5 }, { x: 6 }] },
+      { colorIdx: 3, etiqueta: "feature/interactividad", forkFrom: { laneIdx: 0, x: 1 },
+        nodos: [{ x: 2 }, { x: 3 }, { x: 4 }, { x: 5 }, { x: 6 }, { x: 7 }, { x: 8 }] },
+      { colorIdx: 4, etiqueta: "feature/footer", forkFrom: { laneIdx: 0, x: 8 },
+        nodos: [{ x: 9 }, { x: 10 }, { x: 11 }] },
+      { colorIdx: 5, etiqueta: "feature/galeria", forkFrom: { laneIdx: 0, x: 8 },
+        nodos: [{ x: 9 }, { x: 10 }, { x: 11 }] },
+      { colorIdx: 6, etiqueta: "feature/testimonios", forkFrom: { laneIdx: 0, x: 8 },
+        nodos: [{ x: 9 }, { x: 10 }, { x: 11 }] },
+      { colorIdx: 7, etiqueta: "feature/contacto-precios", forkFrom: { laneIdx: 0, x: 8 },
+        nodos: [{ x: 9 }, { x: 10 }, { x: 11 }, { x: 12 }] },
+    ];
+    const merges = [
+      { x: 7, laneIdx: 0, fromLaneIdx: 1, fromX: 6, valid: true, subject: "merge: integra estructura en main" },
+      { x: 8, laneIdx: 0, fromLaneIdx: 2, fromX: 6, valid: true, subject: "merge: integra estilos en main" },
+    ];
+    return { lanes, merges };
+  }
+
+  // ---------- Orquestación ----------
+
+  const checklistEl = document.getElementById("checklist");
+  const globalStatusEl = document.getElementById("global-status");
+  const warningAreaEl = document.getElementById("warning-area");
+  const actualEmptyEl = document.getElementById("actual-empty");
+  const actualScrollEl = document.getElementById("actual-scroll");
+
+  function pillFor(estado, prereqOk) {
+    if (estado.completo) return '<span class="pill ok">Completo</span>';
+    if (estado.existe) return '<span class="pill pending">En progreso</span>';
+    if (!prereqOk) return '<span class="pill locked">Pendiente</span>';
+    return '<span class="pill pending">Listo para empezar</span>';
+  }
+
+  function detalleTexto(paso, estado) {
+    if (paso.tipo === "merge") {
+      if (!estado.existe) return `Merge ${paso.ramaOrigen} → ${paso.ramaDestino}: todavía no se ha hecho.`;
+      return estado.completo ? "Merge real detectado y válido." : "Encontré algo, pero no cumple las reglas del merge (revisa abajo).";
+    }
+    const validCount = estado.commits.filter((c) => c.valid).length;
+    return estado.existe
+      ? `${validCount}/${paso.commitsMinimos} commits válidos con la palabra clave "${paso.palabraClave}"`
+      : `0/${paso.commitsMinimos} commits · la rama todavía no existe`;
+  }
+
+  function renderChecklist(modelo) {
+    checklistEl.innerHTML = "";
+    PASOS.forEach((paso) => {
+      const estado = modelo.estadoPorPaso[paso.id];
+      const prereqOk = paso.requiere.every((r) => modelo.estadoPorPaso[r] && modelo.estadoPorPaso[r].completo);
+      const li = document.createElement("li");
+
+      const head = document.createElement("div");
+      head.className = "step-head";
+      const dot = document.createElement("span");
+      dot.className = "lane-dot";
+      const laneIdx = NOMBRES_RAMA.indexOf(paso.rama);
+      dot.style.background = laneIdx >= 0 ? laneColor(laneIdx) : cssVar("--ink-soft");
+      head.appendChild(dot);
+      const titleSpan = document.createElement("span");
+      titleSpan.textContent = paso.etiqueta.replace(/^Tarea \d+\/15 · /, "");
+      head.appendChild(titleSpan);
+      const branchSpan = document.createElement("span");
+      branchSpan.className = "step-branch";
+      branchSpan.innerHTML = pillFor(estado, prereqOk);
+      head.appendChild(branchSpan);
+      li.appendChild(head);
+
+      const detail = document.createElement("p");
+      detail.className = "step-detail";
+      detail.textContent = detalleTexto(paso, estado);
+      li.appendChild(detail);
+
+      const invalidos = estado.commits.filter((c) => !c.valid);
+      if (invalidos.length) {
+        const ul = document.createElement("ul");
+        ul.className = "error-list";
+        invalidos.forEach((c) => {
+          const item = document.createElement("li");
+          item.textContent = `"${c.subject}" — ${c.errores.join(" · ")}`;
+          ul.appendChild(item);
+        });
+        li.appendChild(ul);
+      }
+
+      checklistEl.appendChild(li);
+    });
+  }
+
+  function renderResumenGlobal(modelo) {
+    const pasosCompletos = PASOS.filter((p) => modelo.estadoPorPaso[p.id].completo).length;
+    globalStatusEl.innerHTML = `
+      <strong>${pasosCompletos}/${PASOS.length}</strong> pasos completos
+      <div class="progress-bar"><div style="width:${(pasosCompletos / PASOS.length) * 100}%"></div></div>
+    `;
+
+    warningAreaEl.innerHTML = "";
+    if (modelo.extraLanes && modelo.extraLanes.length) {
+      const div = document.createElement("div");
+      div.className = "warning-banner";
+      div.textContent = `Encontré rama(s) fuera del taller: ${modelo.extraLanes.map((l) => l.nombre).join(", ")}. No se evalúan, solo se muestran en gris.`;
+      warningAreaEl.appendChild(div);
+    }
+  }
+
+  function modeloParaSvg(modelo) {
+    const lanes = NOMBRES_RAMA.map((ramaNombre, idx) => {
+      const pasosDeEstaRama = RAMA_STEPS.filter((p) => p.rama === ramaNombre);
+      const primerPaso = pasosDeEstaRama[0];
+      const info = modelo.commitsPorRama[ramaNombre];
+      const nodos = [];
+
+      if (!primerPaso.ramaBase && info && info.semilla && info.semilla.length) {
+        info.semilla.forEach((s) => nodos.push({ x: modelo.xIndex.get(s.hash), isSeed: true, subject: "(commit inicial de la plantilla)" }));
+      }
+
+      pasosDeEstaRama.forEach((paso) => {
+        const estado = modelo.estadoPorPaso[paso.id];
+        estado.commits.forEach((c) => {
+          nodos.push({ x: modelo.xIndex.get(c.hash), valid: c.valid, subject: c.subject, errores: c.errores, hash: c.hash });
+        });
+        let siguienteX = nodos.length ? nodos[nodos.length - 1].x + 1 : (estado.forkParentHash != null && modelo.xIndex.has(estado.forkParentHash) ? modelo.xIndex.get(estado.forkParentHash) + 1 : modelo.totalCommits);
+        const faltan = Math.max(0, (paso.commitsMinimos || 0) - estado.commits.length);
+        for (let i = 0; i < faltan; i++) {
+          nodos.push({ x: siguienteX + i, isPlaceholder: true });
+        }
+      });
+
+      let forkFrom = null;
+      if (primerPaso.ramaBase && info && info.forkParentHash != null && modelo.xIndex.has(info.forkParentHash)) {
+        const laneBaseNombre = modelo.claimed.get(info.forkParentHash);
+        const laneBaseIdx = NOMBRES_RAMA.indexOf(laneBaseNombre);
+        if (laneBaseIdx >= 0) forkFrom = { laneIdx: laneBaseIdx, x: modelo.xIndex.get(info.forkParentHash) };
+      }
+
+      return { colorIdx: idx, etiqueta: ramaNombre, forkFrom, nodos };
+    });
+
+    modelo.extraLanes.forEach((extra) => {
+      lanes.push({
+        colorIdx: 99,
+        etiqueta: extra.nombre + " (fuera del taller)",
+        forkFrom: null,
+        nodos: extra.commits.map((c) => ({ x: modelo.xIndex.get(c.hash), subject: c.subject, valid: true })),
+      });
+    });
+
+    const mainLaneIdx = NOMBRES_RAMA.indexOf("main");
+
+    const merges = PASOS.filter((p) => p.tipo === "merge").map((paso) => {
+      const est = modelo.estadoPorPaso[paso.id];
+      if (!est.existe) return null;
+      const origenLaneIdx = NOMBRES_RAMA.indexOf(paso.ramaOrigen);
+      const c = est.commits[0];
+      const x = c && c.hash && modelo.xIndex.has(c.hash) ? modelo.xIndex.get(c.hash) : modelo.totalCommits;
+      const fromX = est.origenTip && modelo.xIndex.has(est.origenTip) ? modelo.xIndex.get(est.origenTip) : null;
+      return { x, laneIdx: mainLaneIdx, fromLaneIdx: origenLaneIdx, fromX, valid: !!(c && c.valid), subject: c ? c.subject : "", errores: c ? c.errores : [] };
+    }).filter(Boolean);
+
+    return { lanes, merges };
+  }
+
+  function analizar() {
+    const text = document.getElementById("log-input").value;
+    if (!text.trim()) return;
+    const modelo = construirModelo(text);
+    renderChecklist(modelo);
+    renderResumenGlobal(modelo);
+    renderGraph(document.getElementById("actual-svg"), modeloParaSvg(modelo));
+    actualEmptyEl.style.display = "none";
+    actualScrollEl.style.display = "block";
+  }
+
+  document.getElementById("analyze-btn").addEventListener("click", analizar);
+
+  function wireCopyButton(btnId, codeId, etiquetaOriginal) {
+    const btn = document.getElementById(btnId);
+    const codeEl = document.getElementById(codeId);
+    if (!btn || !codeEl) return;
+    btn.addEventListener("click", async () => {
+      const text = codeEl.textContent;
+      let copiado = false;
+      // El artifact corre dentro de un iframe con permisos restringidos: la
+      // Clipboard API moderna suele estar bloqueada por Permissions-Policy.
+      // Probamos igual (funciona en algunos contextos) y si falla, caemos a
+      // document.execCommand("copy"), que es mas viejo pero a veces sigue
+      // funcionando ahi donde la API moderna esta bloqueada.
+      try {
+        await navigator.clipboard.writeText(text);
+        copiado = true;
+      } catch (e) {
+        const range = document.createRange();
+        range.selectNodeContents(codeEl);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        try {
+          copiado = document.execCommand("copy");
+        } catch (e2) {
+          copiado = false;
+        }
+      }
+      btn.textContent = copiado ? "¡Copiado!" : "Presiona Ctrl+C ahora";
+      setTimeout(() => { btn.textContent = etiquetaOriginal; }, copiado ? 1600 : 3200);
+    });
+  }
+  wireCopyButton("copy-btn", "cmd-text", "Copiar");
+  wireCopyButton("copy-btn-ps", "cmd-text-ps", "Copiar (PowerShell)");
+  wireCopyButton("copy-btn-mac", "cmd-text-mac", "Copiar (macOS)");
+  wireCopyButton("copy-btn-linux", "cmd-text-linux", "Copiar (Linux)");
+
+  // Estado inicial: solo el diagrama objetivo
+  const objetivo = construirModeloObjetivo();
+  renderGraph(document.getElementById("target-svg"), objetivo);
+  renderLegend(document.getElementById("legend-target"), objetivo.lanes);
+  actualScrollEl.style.display = "none";
+
+  // Checklist inicial en blanco (todo pendiente) para que se vea la lista de pasos desde el principio.
+  const vacio = { estadoPorPaso: {}, merges: [], extraLanes: [] };
+  PASOS.forEach((p) => { vacio.estadoPorPaso[p.id] = { existe: false, completo: false, commits: [] }; });
+  renderChecklist(vacio);
+  renderResumenGlobal(vacio);
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
