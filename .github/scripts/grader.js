@@ -33,6 +33,9 @@ function commitDeMergeQueTrae(origenTip, destino) {
 }
 
 function commitsUniqueTo(rama, ramaBase) {
+  // Devuelve los commits propios de `rama` (no de `ramaBase`), de mas viejo
+  // a mas nuevo. Una tarea posterior sobre la misma rama usa commitsDesde
+  // para saltarse los commits que ya conto una tarea anterior.
   let range;
   let yaMergeada = false;
   try {
@@ -78,11 +81,7 @@ function commitsUniqueTo(rama, ramaBase) {
       const subject = (body.split('\n')[0] || '').trim();
       return { hash, subject, body };
     })
-    // Un commit traido con cherry-pick -x no es autoria original de esta
-    // rama (pertenece al paso de cherry-pick): no debe contar ni fallar aqui.
-    // Se detecto probando contra prueba: el cherry-pick obligatorio del paso
-    // 11 rompia la validacion propia de feature/interactividad-js.
-    .filter((c) => !c.body.toLowerCase().includes('cherry picked from commit'));
+    .reverse(); // de mas viejo a mas nuevo
 }
 
 function archivosDe(hash) {
@@ -99,10 +98,11 @@ function archivosDe(hash) {
 
 function commitsIniciales(rama) {
   // Commits hechos directamente en `rama` (primer padre) antes de su primer
-  // merge. `git log origin/rama` sin acotar arrastra para siempre todo el
-  // historial de cualquier cosa ya fusionada ahi (se detecto probando contra
-  // el repo de prueba ya mergeado: main-setup nunca volvia a validar como
-  // completo). Cortamos en el primer commit de merge que aparezca.
+  // merge, de mas viejo a mas nuevo. `git log origin/rama` sin acotar
+  // arrastra para siempre todo el historial de cualquier cosa ya fusionada
+  // ahi (se detecto probando contra el repo de prueba ya mergeado:
+  // main-setup nunca volvia a validar como completo). Cortamos en el primer
+  // commit de merge que aparezca.
   let raw;
   try {
     raw = execSync(
@@ -132,22 +132,6 @@ function commitsRaiz(rama) {
   } catch {
     return [];
   }
-}
-
-function tagInfo(nombreTag) {
-  let out;
-  try {
-    out = execSync(
-      `git for-each-ref refs/tags/${nombreTag} --format="%(objectname)${SEP1}%(contents)"`,
-      { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
-    );
-  } catch {
-    return null;
-  }
-  if (!out || !out.trim()) return null;
-  const idx = out.indexOf(SEP1);
-  if (idx < 0) return { objectname: out.trim(), contents: '' };
-  return { objectname: out.slice(0, idx), contents: out.slice(idx + 1).replace(/\n+$/, '') };
 }
 
 // ---------- Validacion de mensajes ----------
@@ -204,29 +188,18 @@ function validarMensaje(subject, paso) {
   return { valid: errores.length === 0, errores };
 }
 
-function esRevertCommit(subject) {
-  return /^Revert "/.test(subject);
-}
-
 function validarComoRama(crudos, paso) {
   const vistos = new Map();
   return crudos.map((c) => {
-    let valid;
-    let errores;
-    if (paso.tipo === 'revert' && esRevertCommit(c.subject)) {
-      valid = true;
-      errores = [];
-    } else {
-      const r = validarMensaje(c.subject, paso);
-      valid = r.valid;
-      errores = r.errores.slice();
-      if (paso.patronArchivo) {
-        const archivos = archivosDe(c.hash);
-        const patt = new RegExp(paso.patronArchivo, 'i');
-        if (!archivos.some((a) => patt.test(a))) {
-          valid = false;
-          errores.push(`Este commit no toca ningún archivo que coincida con ${paso.patronArchivo}: el taller espera contenido real de esa parte.`);
-        }
+    const r = validarMensaje(c.subject, paso);
+    let valid = r.valid;
+    const errores = r.errores.slice();
+    if (paso.patronArchivo) {
+      const archivos = archivosDe(c.hash);
+      const patt = new RegExp(paso.patronArchivo, 'i');
+      if (!archivos.some((a) => patt.test(a))) {
+        valid = false;
+        errores.push(`Este commit no toca ningún archivo que coincida con ${paso.patronArchivo}: el taller espera contenido real de esa parte.`);
       }
     }
     const clave = c.subject.trim().toLowerCase();
@@ -259,12 +232,20 @@ function evaluarRama(paso) {
     crudos = crudos.filter((c) => !raices.has(c.hash));
   }
 
-  const commits = validarComoRama(crudos, paso);
-  let completo = commits.length >= paso.commitsMinimos && commits.every((c) => c.valid);
-  if (paso.tipo === 'revert') {
-    const tieneRevert = commits.some((c) => esRevertCommit(c.subject));
-    completo = completo && tieneRevert;
-  }
+  // Varias tareas pueden compartir la misma rama (por ejemplo, varias tandas
+  // de commits en feature/contenido). commitsDesde se salta los commits que
+  // ya le tocaron a una tarea anterior sobre esa misma rama; de ahi en
+  // adelante, solo miramos los commits que ya traen la palabra clave de esta
+  // tarea (los de una tarea posterior en la misma rama, con otra palabra
+  // clave, no cuentan ni se reportan como error aqui). Sin este filtro, cada
+  // tanda nueva que el estudiante agrega rompia retroactivamente la
+  // validacion de la tanda anterior en la misma rama.
+  const disponibles = crudos.slice(paso.commitsDesde || 0);
+  const keywordRe = new RegExp(`\\b${paso.palabraClave}\\b`, 'i');
+  const candidatos = disponibles.filter((c) => keywordRe.test(c.subject));
+
+  const commits = validarComoRama(candidatos, paso);
+  const completo = commits.length >= paso.commitsMinimos && commits.every((c) => c.valid);
   return { existe: true, completo, commits };
 }
 
@@ -322,75 +303,9 @@ function evaluarMerge(paso) {
   return { existe: true, completo, commits };
 }
 
-function evaluarTag(paso) {
-  const info = tagInfo(paso.nombreTag);
-  if (!info) {
-    return { existe: false, completo: false, commits: [] };
-  }
-  const errores = [];
-  const contenido = (info.contents || '').trim();
-  if (contenido.length < 10) {
-    errores.push('El tag necesita un mensaje real (usa git tag -a, no un tag simple).');
-  }
-  const kwRe = new RegExp(`\\b${paso.palabraClave}\\b`, 'i');
-  if (!kwRe.test(contenido)) {
-    errores.push(`Falta la palabra clave "${paso.palabraClave}" en el mensaje del tag.`);
-  }
-  const valid = errores.length === 0;
-  return {
-    existe: true,
-    completo: valid,
-    commits: [{ hash: info.objectname, subject: contenido || '(tag sin mensaje)', valid, errores }],
-  };
-}
-
-function evaluarCherryPick(paso) {
-  if (!branchExists(paso.ramaOrigen) || !branchExists(paso.ramaDestino)) {
-    return { existe: false, completo: false, commits: [] };
-  }
-  const origenTip = execSync(`git rev-parse origin/${paso.ramaOrigen}`, { encoding: 'utf8' }).trim();
-  const corto = origenTip.slice(0, 7);
-
-  let raw;
-  try {
-    raw = execSync(
-      `git log origin/${paso.ramaDestino} --pretty=format:"%H${SEP1}%B${SEP2}"`,
-      { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
-    );
-  } catch {
-    raw = '';
-  }
-  const commits = raw.split(SEP2).map((s) => s.trim()).filter(Boolean).map((rec) => {
-    const idx = rec.indexOf(SEP1);
-    return { hash: rec.slice(0, idx), body: rec.slice(idx + 1) };
-  });
-
-  const encontrado = commits.find(
-    (c) => c.body.toLowerCase().includes(`cherry picked from commit ${corto}`) || c.body.includes(origenTip)
-  );
-
-  if (!encontrado) {
-    return {
-      existe: true,
-      completo: false,
-      commits: [{
-        hash: '', subject: '(sin cherry-pick detectado)', valid: false,
-        errores: [`Todavía no encuentro en ${paso.ramaDestino} un commit que traiga (con -x) el último commit de ${paso.ramaOrigen}.`],
-      }],
-    };
-  }
-  return {
-    existe: true,
-    completo: true,
-    commits: [{ hash: encontrado.hash, subject: '(cherry-pick detectado correctamente)', valid: true, errores: [] }],
-  };
-}
-
 function evaluarPaso(paso) {
   if (paso.tipo === 'merge') return evaluarMerge(paso);
-  if (paso.tipo === 'tag') return evaluarTag(paso);
-  if (paso.tipo === 'cherry-pick') return evaluarCherryPick(paso);
-  return evaluarRama(paso); // 'rama' y 'revert'
+  return evaluarRama(paso);
 }
 
 module.exports = async ({ github, context, core }) => {
@@ -450,7 +365,7 @@ module.exports = async ({ github, context, core }) => {
             .join('\n');
           await github.rest.issues.createComment({
             owner, repo, issue_number: issue.number,
-            body: `⚠️ Todavía no cumple las reglas de este paso:\n\n${detalle}\n\nCorrígelo y vuelve a hacer push (o \`git push --tags\` si es un tag).`,
+            body: `⚠️ Todavía no cumple las reglas de este paso:\n\n${detalle}\n\nCorrígelo y vuelve a hacer push.`,
           });
         } else if (typeof paso.commitsMinimos === 'number' && ev.commits.length < paso.commitsMinimos) {
           await github.rest.issues.createComment({
@@ -472,7 +387,7 @@ module.exports = async ({ github, context, core }) => {
       const created = await github.rest.issues.create({
         owner, repo,
         title: '🏁 ¡Taller de árboles de commits completado!',
-        body: 'Completaste los 15 pasos: 10 ramas de contenido, 2 merges reales, 1 tag anotado, 1 cherry-pick y 1 revert. Comparte el link de tu repositorio con tu profesor.',
+        body: 'Completaste los 15 pasos repartidos en 5 ramas (main + 4), con 2 merges reales. Comparte el link de tu repositorio con tu profesor.',
         labels: [finalLabel],
       });
       await github.rest.issues.update({ owner, repo, issue_number: created.data.number, state: 'closed' });
