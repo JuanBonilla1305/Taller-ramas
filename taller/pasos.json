@@ -13,7 +13,7 @@
       "patronArchivo": null,
       "requiere": [],
       "tituloIssue": "Paso 1/15 — Base del proyecto en main",
-      "cuerpoIssue": "Deja `main` con la base del proyecto: **2 commits reales**.\n\n1. `git checkout main`\n2. Agrega el contenido inicial real de tu página y haz un commit `chore` con la palabra clave **base**.\n3. Edita `README.md` con una descripción real del proyecto y haz un commit `docs`, también con **base**.\n4. `git push origin main`\n\nFormato: `tipo(alcance): descripcion` · tipos: chore, docs · min. 20 caracteres · sin mensajes genéricos."
+      "cuerpoIssue": "Esta es la primera tarea. Vas a dejar la rama `main` (la rama principal de tu proyecto, la que ya tienes abierta ahora mismo) con **2 commits reales**.\n\nUn **commit** es un punto guardado en la historia de tu proyecto: le tomas una \"foto\" a los archivos que cambiaste, con un mensaje que describe qué hiciste. Sigue esto exactamente, un paso a la vez, en tu terminal (en la carpeta de tu repositorio):\n\n1. Escribe `git checkout main` y presiona Enter. Esto asegura que estás parado en la rama principal.\n2. Abre el archivo `index.html` (o el que sea la página principal de tu sitio) en tu editor y escribe contenido real de tu proyecto — el tema lo eliges tú. Guarda el archivo.\n3. En la terminal, escribe `git add .` y presiona Enter. Esto le dice a git \"prepara todos los archivos que cambié para guardarlos en el próximo commit\".\n4. Escribe exactamente esto (cambiando solo el texto después de los dos puntos por una descripción real de lo que hiciste), y presiona Enter:\n   `git commit -m \"chore(setup): agrega la base inicial del proyecto\"`\n   - `chore` es el **tipo** de commit — en esta tarea usa `chore` o `docs`.\n   - La palabra **base** tiene que aparecer en el mensaje tal cual (es la palabra clave que el revisor automático busca para saber que este commit es de esta tarea).\n   - La descripción debe tener mínimo 20 caracteres y contar algo real — nada de \"cambios\" o \"update\".\n5. Abre `README.md` y escribe una descripción real de tu proyecto (qué es, para qué sirve). Guarda.\n6. Repite los pasos 3 y 4, pero ahora con tipo `docs`, por ejemplo:\n   `git add .`\n   `git commit -m \"docs(readme): agrega base de la documentacion del proyecto\"`\n7. Sube tus commits a GitHub escribiendo `git push origin main` y presiona Enter.\n\nCuando termines, un robot revisa tu repositorio automáticamente (tarda unos segundos). Si todo está bien, este issue se cierra solo y aparece la siguiente tarea."
     },
     {
       "id": "estructura-crear",
@@ -27,7 +27,7 @@
       "patronArchivo": "\\.html$",
       "requiere": ["main-setup"],
       "tituloIssue": "Paso 2/15 — Rama feature/estructura",
-      "cuerpoIssue": "Desde `main`, crea `feature/estructura` y avanza la estructura HTML con **3 commits reales**.\n\n1. `git checkout main && git checkout -b feature/estructura`\n2. 3 commits `feat`, cada uno con la palabra clave **estructura**, cada uno tocando al menos un archivo `.html`.\n3. `git push origin feature/estructura`\n\n**No hagas merge todavía** (esta rama se integra más adelante, en el paso 6)."
+      "cuerpoIssue": "Ahora vas a crear tu primera **rama**. Una rama es una copia paralela de tu proyecto donde puedes trabajar en algo nuevo sin tocar todavía la versión principal (`main`). Vas a hacer **3 commits reales** en esta rama nueva, agregando estructura HTML a tu página (secciones, encabezados, contenido — lo que tenga sentido para tu proyecto).\n\n1. Escribe `git checkout main` y Enter (para partir desde main).\n2. Escribe `git checkout -b feature/estructura` y Enter. El flag `-b` significa \"crea esta rama nueva y párate en ella\". El nombre `feature/estructura` es obligatorio, no lo cambies.\n3. Edita un archivo `.html` de tu proyecto agregando contenido real. Guarda.\n4. `git add .`\n5. `git commit -m \"feat(estructura): agrega encabezado con menu de navegacion\"` — el tipo debe ser `feat`, y la palabra **estructura** tiene que aparecer en el mensaje.\n6. Repite los pasos 3 a 5 **dos veces más** (edita algo distinto cada vez, con un mensaje distinto cada vez) hasta tener 3 commits en total, todos con la palabra **estructura** y todos tocando un archivo `.html`.\n7. Sube la rama con `git push origin feature/estructura`.\n\n**Importante: no hagas merge todavía.** El merge de esta rama es una tarea aparte, más adelante (paso 6)."
     },
     {
       "id": "estilos-crear",
@@ -41,7 +41,7 @@
       "patronArchivo": "\\.css$",
       "requiere": ["main-setup"],
       "tituloIssue": "Paso 3/15 — Rama feature/estilos",
-      "cuerpoIssue": "Desde `main`, crea `feature/estilos` y avanza el diseño con **3 commits reales**.\n\n1. `git checkout main && git checkout -b feature/estilos`\n2. 3 commits (`feat` o `style`) con la palabra clave **estilos**, cada uno tocando al menos un archivo `.css`.\n3. `git push origin feature/estilos`\n\n**No hagas merge todavía** (se integra en el paso 8)."
+      "cuerpoIssue": "Otra rama nueva, esta vez para el diseño (CSS) de tu página. Vas a hacer **3 commits reales**.\n\n1. `git checkout main` y Enter.\n2. `git checkout -b feature/estilos` y Enter (crea la rama y te paras en ella).\n3. Edita tu archivo `.css` agregando estilos reales (colores, tipografía, espaciados — lo que corresponda a tu diseño). Guarda.\n4. `git add .`\n5. `git commit -m \"feat(estilos): agrega estilos base de tipografia y colores\"` — el tipo puede ser `feat` o `style`, y la palabra **estilos** debe aparecer en el mensaje.\n6. Repite los pasos 3 a 5 **dos veces más** (cambios distintos, mensajes distintos) hasta llegar a 3 commits, todos tocando un archivo `.css`.\n7. `git push origin feature/estilos`.\n\n**No hagas merge todavía** — esta rama se integra más adelante, en el paso 8."
     },
     {
       "id": "interactividad-crear",
@@ -55,7 +55,7 @@
       "patronArchivo": "\\.js$",
       "requiere": ["main-setup"],
       "tituloIssue": "Paso 4/15 — Rama feature/interactividad",
-      "cuerpoIssue": "Desde `main`, crea `feature/interactividad` con **3 commits reales** (`feat`/`fix`), cada uno con la palabra clave **interactividad** y tocando al menos un archivo `.js`.\n\n1. `git checkout main && git checkout -b feature/interactividad`\n2. 3 commits.\n3. `git push origin feature/interactividad`\n\n**Esta rama no se integra en el taller** — se queda divergente a propósito, como una rama real que sigue en revisión."
+      "cuerpoIssue": "Una tercera rama, para agregarle comportamiento a tu página con JavaScript. Vas a hacer **3 commits reales**.\n\n1. `git checkout main` y Enter.\n2. `git checkout -b feature/interactividad` y Enter.\n3. Crea o edita un archivo `.js` agregando código real (por ejemplo un menú que se abre y cierra, o validar un formulario). Guarda.\n4. `git add .`\n5. `git commit -m \"feat(interactividad): agrega logica del menu desplegable\"` — tipo `feat` o `fix`, y la palabra **interactividad** debe aparecer en el mensaje.\n6. Repite los pasos 3 a 5 **dos veces más** hasta llegar a 3 commits, todos tocando un archivo `.js`.\n7. `git push origin feature/interactividad`.\n\n**Esta rama nunca se integra a `main` en este taller** — se queda \"divergente\" a propósito, como una rama real que sigue en revisión y todavía no está lista para publicarse. Más adelante (pasos 14 y 15) vas a volver a esta misma rama para agregarle más commits."
     },
     {
       "id": "estructura-formulario",
@@ -69,7 +69,7 @@
       "patronArchivo": "\\.html$",
       "requiere": ["estructura-crear"],
       "tituloIssue": "Paso 5/15 — feature/estructura: agrega el formulario",
-      "cuerpoIssue": "Sigue trabajando en **la misma rama `feature/estructura`** (no crees una nueva): agrega **2 commits más**, ahora con la palabra clave **formulario**, tocando `.html`.\n\n1. `git checkout feature/estructura`\n2. 2 commits `feat` con la palabra clave **formulario**.\n3. `git push origin feature/estructura`\n\n**No hagas merge todavía** (el merge de esta rama es el paso 6, con los 5 commits ya arriba)."
+      "cuerpoIssue": "No vas a crear una rama nueva: vas a **volver a `feature/estructura`** (la del paso 2) y agregarle 2 commits más, esta vez con un formulario de contacto.\n\n1. Escribe `git checkout feature/estructura` (sin el `-b`, porque esta rama ya existe — `-b` solo se usa para crear una rama nueva).\n2. Agrega un formulario real a tu HTML (por ejemplo, campos de nombre y correo). Guarda.\n3. `git add .`\n4. `git commit -m \"feat(formulario): agrega formulario de contacto con campo de nombre\"` — la palabra **formulario** debe aparecer en el mensaje (ya no necesitas la palabra \"estructura\" en estos commits nuevos).\n5. Repite los pasos 2 a 4 **una vez más** (otro cambio real al formulario) hasta tener 2 commits nuevos.\n6. `git push origin feature/estructura`.\n\n**No hagas merge todavía** — el merge de esta rama (con los 5 commits que ya tiene en total) es la siguiente tarea."
     },
     {
       "id": "merge-estructura",
@@ -79,7 +79,7 @@
       "palabraClave": "estructura",
       "requiere": ["estructura-formulario"],
       "tituloIssue": "Paso 6/15 — Merge obligatorio: feature/estructura → main",
-      "cuerpoIssue": "Integra `feature/estructura` en `main` con un **merge commit real** (no fast-forward).\n\n1. `git checkout main`\n2. `git merge --no-ff feature/estructura -m \"merge: integra la estructura del sitio en main\"` (el mensaje debe incluir la palabra **estructura** y describir algo real, no puede ser el mensaje automático de git).\n3. Si hay conflictos, resuélvelos, `git add` los archivos y `git commit` para terminar el merge.\n4. `git push origin main`\n\nUsa `--no-ff` a propósito: si no, git podría hacer fast-forward y no quedaría un commit de merge que podamos validar."
+      "cuerpoIssue": "Ahora vas a **integrar** (fusionar) todo lo que hiciste en `feature/estructura` de vuelta en `main`. A esto se le llama **merge**.\n\n1. Escribe `git checkout main` y Enter (te paras en la rama principal, que es donde va a quedar el resultado del merge).\n2. Escribe exactamente:\n   `git merge --no-ff feature/estructura -m \"merge: integra la estructura del sitio en main\"`\n   - `--no-ff` significa \"no hagas un atajo, deja un commit especial que marque que aquí se unieron dos ramas\". Sin este flag, en algunos casos git no deja ningún rastro del merge, y el revisor no lo va a poder validar.\n   - El mensaje (después de `-m`) tiene que incluir la palabra **estructura** y describir algo real — no puede quedar el mensaje automático que a veces propone git.\n3. Si aparece un mensaje de **conflicto** (git te dice que no pudo unir automáticamente algún archivo): abre ese archivo, vas a ver unas marcas como `<<<<<<<`, `=======` y `>>>>>>>` alrededor del texto en conflicto. Decide qué contenido dejar, borra las marcas, guarda el archivo, y luego escribe `git add .` seguido de `git commit` (sin `-m`, se va a abrir un editor con un mensaje ya sugerido — solo guárdalo y ciérralo) para terminar el merge.\n4. Sube el resultado con `git push origin main`."
     },
     {
       "id": "estilos-responsive",
@@ -93,7 +93,7 @@
       "patronArchivo": "\\.css$",
       "requiere": ["estilos-crear"],
       "tituloIssue": "Paso 7/15 — feature/estilos: hazlo responsive",
-      "cuerpoIssue": "Sigue en **la misma rama `feature/estilos`**: agrega **2 commits más** con la palabra clave **responsive**, tocando `.css`.\n\n1. `git checkout feature/estilos`\n2. 2 commits (`feat` o `style`) con la palabra clave **responsive**.\n3. `git push origin feature/estilos`\n\n**No hagas merge todavía** (el merge es el paso 8)."
+      "cuerpoIssue": "Vuelve a `feature/estilos` (la del paso 3) y agrégale 2 commits más, esta vez para que tu página se vea bien en celular (esto se llama **diseño responsive**).\n\n1. `git checkout feature/estilos` (sin `-b`, ya existe).\n2. Agrega en tu `.css` una regla `@media` para pantallas pequeñas (por ejemplo, que el menú se apile en vertical en vez de horizontal). Guarda.\n3. `git add .`\n4. `git commit -m \"feat(responsive): agrega diseno responsive para pantallas pequenas\"` — tipo `feat` o `style`, con la palabra **responsive** en el mensaje.\n5. Repite los pasos 2 a 4 **una vez más** hasta tener 2 commits nuevos, ambos tocando el `.css`.\n6. `git push origin feature/estilos`.\n\n**No hagas merge todavía** — es la siguiente tarea."
     },
     {
       "id": "merge-estilos",
@@ -103,7 +103,7 @@
       "palabraClave": "estilos",
       "requiere": ["estilos-responsive", "merge-estructura"],
       "tituloIssue": "Paso 8/15 — Merge obligatorio: feature/estilos → main",
-      "cuerpoIssue": "Integra `feature/estilos` en `main`, también con merge commit real.\n\n1. `git checkout main`\n2. `git merge --no-ff feature/estilos -m \"merge: integra los estilos del sitio en main\"` (debe incluir la palabra **estilos**).\n3. Resuelve conflictos si aparecen y termina el merge.\n4. `git push origin main`"
+      "cuerpoIssue": "Igual que el paso 6, pero ahora con `feature/estilos`.\n\n1. `git checkout main`.\n2. `git merge --no-ff feature/estilos -m \"merge: integra los estilos del sitio en main\"` — recuerda que el mensaje debe incluir la palabra **estilos** y describir algo real.\n3. Si git te avisa de un conflicto: abre el archivo marcado, decide qué dejar, borra las marcas `<<<<<<<` `=======` `>>>>>>>`, guarda, `git add .`, `git commit`.\n4. `git push origin main`.\n\nCon esto, `main` ya tiene integrada la estructura y los estilos de tu sitio."
     },
     {
       "id": "footer-crear",
@@ -117,7 +117,7 @@
       "patronArchivo": "\\.html$",
       "requiere": ["merge-estructura", "merge-estilos"],
       "tituloIssue": "Paso 9/15 — Rama feature/footer",
-      "cuerpoIssue": "Con `main` ya integrado (estructura + estilos), crea `feature/footer` con **3 commits reales** (`feat`, palabra clave **footer**, tocando `.html`).\n\n1. `git checkout main && git checkout -b feature/footer`\n2. 3 commits.\n3. `git push origin feature/footer`\n\n**Esta rama no se integra en el taller** — se queda sin mergear."
+      "cuerpoIssue": "Con `main` ya al día (estructura + estilos integrados), crea una rama nueva para el pie de página (footer) de tu sitio. **3 commits reales**.\n\n1. `git checkout main` y Enter.\n2. `git checkout -b feature/footer` y Enter.\n3. Agrega un footer real a tu HTML (por ejemplo datos de contacto, redes sociales, derechos de autor). Guarda.\n4. `git add .`\n5. `git commit -m \"feat(footer): agrega pie de pagina con datos de contacto\"` — tipo `feat`, con la palabra **footer** en el mensaje.\n6. Repite los pasos 3 a 5 **dos veces más** hasta llegar a 3 commits, todos tocando `.html`.\n7. `git push origin feature/footer`.\n\n**Esta rama no se integra en el taller** — se queda sin mergear, como una rama real que sigue en revisión."
     },
     {
       "id": "galeria-crear",
@@ -131,7 +131,7 @@
       "patronArchivo": "\\.(html|css)$",
       "requiere": ["merge-estructura", "merge-estilos"],
       "tituloIssue": "Paso 10/15 — Rama feature/galeria",
-      "cuerpoIssue": "Desde `main`, crea `feature/galeria` con **3 commits reales** (`feat`, palabra clave **galeria**, tocando `.html` o `.css`).\n\n1. `git checkout main && git checkout -b feature/galeria`\n2. 3 commits.\n3. `git push origin feature/galeria`\n\n**Esta rama no se integra en el taller** — se queda sin mergear."
+      "cuerpoIssue": "Otra rama nueva desde `main`, esta vez para una galería de imágenes. **3 commits reales**.\n\n1. `git checkout main` y Enter.\n2. `git checkout -b feature/galeria` y Enter.\n3. Agrega contenido real de la galería — puede ser en tu archivo `.html` (el contenedor, las imágenes) o en tu `.css` (los estilos de cuadrícula). Guarda.\n4. `git add .`\n5. `git commit -m \"feat(galeria): agrega contenedor de la galeria de imagenes\"` — tipo `feat`, con la palabra **galeria** en el mensaje.\n6. Repite los pasos 3 a 5 **dos veces más** hasta llegar a 3 commits, cada uno tocando `.html` o `.css`.\n7. `git push origin feature/galeria`.\n\n**Esta rama no se integra en el taller** — se queda sin mergear."
     },
     {
       "id": "testimonios-crear",
@@ -145,7 +145,7 @@
       "patronArchivo": "\\.html$",
       "requiere": ["merge-estructura", "merge-estilos"],
       "tituloIssue": "Paso 11/15 — Rama feature/testimonios",
-      "cuerpoIssue": "Desde `main`, crea `feature/testimonios` con **3 commits reales** (`feat`, palabra clave **testimonios**, tocando `.html`).\n\n1. `git checkout main && git checkout -b feature/testimonios`\n2. 3 commits.\n3. `git push origin feature/testimonios`\n\n**Esta rama no se integra en el taller** — se queda sin mergear."
+      "cuerpoIssue": "Otra rama nueva desde `main`, para una sección de testimonios de clientes. **3 commits reales**.\n\n1. `git checkout main` y Enter.\n2. `git checkout -b feature/testimonios` y Enter.\n3. Agrega un testimonio real a tu HTML (una frase, un nombre). Guarda.\n4. `git add .`\n5. `git commit -m \"feat(testimonios): agrega primer testimonio de un cliente\"` — tipo `feat`, con la palabra **testimonios** en el mensaje.\n6. Repite los pasos 3 a 5 **dos veces más** (un testimonio distinto cada vez) hasta llegar a 3 commits, todos tocando `.html`.\n7. `git push origin feature/testimonios`.\n\n**Esta rama no se integra en el taller** — se queda sin mergear."
     },
     {
       "id": "contacto-crear",
@@ -159,7 +159,7 @@
       "patronArchivo": "\\.html$",
       "requiere": ["merge-estructura", "merge-estilos"],
       "tituloIssue": "Paso 12/15 — Rama feature/contacto-precios: contacto",
-      "cuerpoIssue": "Desde `main`, crea `feature/contacto-precios` con **2 commits reales** (`feat`, palabra clave **contacto**, tocando `.html`).\n\n1. `git checkout main && git checkout -b feature/contacto-precios`\n2. 2 commits.\n3. `git push origin feature/contacto-precios`\n\n**Esta rama va a acumular otra tanda en el próximo paso — no la mergees.**"
+      "cuerpoIssue": "Última rama nueva desde `main`. Esta va a acumular dos secciones distintas (contacto en esta tarea, precios en la siguiente), así que no la borres ni la mergees todavía. **2 commits reales** por ahora.\n\n1. `git checkout main` y Enter.\n2. `git checkout -b feature/contacto-precios` y Enter.\n3. Agrega información real de contacto a tu HTML (teléfono, dirección, correo). Guarda.\n4. `git add .`\n5. `git commit -m \"feat(contacto): agrega numero de telefono en la seccion de contacto\"` — tipo `feat`, con la palabra **contacto** en el mensaje.\n6. Repite los pasos 3 a 5 **una vez más** hasta llegar a 2 commits, ambos tocando `.html`.\n7. `git push origin feature/contacto-precios`.\n\n**No hagas merge** — en la siguiente tarea vas a volver a esta misma rama para agregar la sección de precios."
     },
     {
       "id": "precios-crear",
@@ -173,7 +173,7 @@
       "patronArchivo": "\\.html$",
       "requiere": ["contacto-crear"],
       "tituloIssue": "Paso 13/15 — feature/contacto-precios: precios",
-      "cuerpoIssue": "Sigue en **la misma rama `feature/contacto-precios`**: agrega **2 commits más** (`feat`, palabra clave **precios**, tocando `.html`).\n\n1. `git checkout feature/contacto-precios`\n2. 2 commits.\n3. `git push origin feature/contacto-precios`\n\n**Esta rama se queda sin mergear** — como `feature/interactividad`, `feature/footer`, `feature/galeria` y `feature/testimonios`, son ramas reales que se quedan en revisión."
+      "cuerpoIssue": "Vuelve a `feature/contacto-precios` (la del paso 12) y agrégale 2 commits más, esta vez con una sección de precios o planes.\n\n1. `git checkout feature/contacto-precios` (sin `-b`, ya existe).\n2. Agrega una tabla o lista real de precios/planes a tu HTML. Guarda.\n3. `git add .`\n4. `git commit -m \"feat(precios): agrega tabla con el plan basico de precios\"` — la palabra **precios** debe aparecer en el mensaje.\n5. Repite los pasos 2 a 4 **una vez más** hasta tener 2 commits nuevos, ambos tocando `.html`.\n6. `git push origin feature/contacto-precios`.\n\n**Esta rama se queda sin mergear** — igual que `feature/interactividad`, `feature/footer`, `feature/galeria` y `feature/testimonios`, son ramas reales que se quedan en revisión, sin integrarse a `main` en este taller."
     },
     {
       "id": "interactividad-mejoras",
@@ -187,7 +187,7 @@
       "patronArchivo": "\\.js$",
       "requiere": ["interactividad-crear"],
       "tituloIssue": "Paso 14/15 — feature/interactividad: mejoras",
-      "cuerpoIssue": "Sigue en **la misma rama `feature/interactividad`**: agrega **2 commits más** (`feat`/`fix`, palabra clave **mejoras**, tocando `.js`).\n\n1. `git checkout feature/interactividad`\n2. 2 commits.\n3. `git push origin feature/interactividad`"
+      "cuerpoIssue": "Vuelve a `feature/interactividad` (la del paso 4) y agrégale 2 commits más, esta vez mejorando algo que ya tenías.\n\n1. `git checkout feature/interactividad` (sin `-b`, ya existe).\n2. Mejora algo real de tu código `.js` (por ejemplo, que el menú también funcione con el teclado, o corregir un detalle que no se veía bien). Guarda.\n3. `git add .`\n4. `git commit -m \"feat(mejoras): agrega mejoras de accesibilidad al menu\"` — tipo `feat` o `fix`, con la palabra **mejoras** en el mensaje.\n5. Repite los pasos 2 a 4 **una vez más** hasta tener 2 commits nuevos, ambos tocando `.js`.\n6. `git push origin feature/interactividad`."
     },
     {
       "id": "interactividad-optimizacion",
@@ -201,7 +201,7 @@
       "patronArchivo": "\\.js$",
       "requiere": ["interactividad-mejoras"],
       "tituloIssue": "Paso 15/15 — feature/interactividad: optimización",
-      "cuerpoIssue": "Último paso, sigue en **la misma rama `feature/interactividad`**: agrega **2 commits más** (`feat`/`fix`, palabra clave **optimizacion**, tocando `.js`).\n\n1. `git checkout feature/interactividad`\n2. 2 commits.\n3. `git push origin feature/interactividad`\n\nCon esto se cierra el taller: 8 ramas (`main` + 7), 15 tareas, 2 merges reales."
+      "cuerpoIssue": "Última tarea del taller. Vuelve otra vez a `feature/interactividad` y agrégale 2 commits más, esta vez optimizando algo (que cargue más rápido, que corra menos veces de lo necesario, etc).\n\n1. `git checkout feature/interactividad` (sin `-b`, ya existe).\n2. Optimiza algo real en tu `.js`. Guarda.\n3. `git add .`\n4. `git commit -m \"feat(optimizacion): agrega optimizacion de carga del menu\"` — tipo `feat` o `fix`, con la palabra **optimizacion** en el mensaje (sin tilde, así se valida).\n5. Repite los pasos 2 a 4 **una vez más** hasta tener 2 commits nuevos, ambos tocando `.js`.\n6. `git push origin feature/interactividad`.\n\nCon esto se cierra el taller: 8 ramas (`main` + 7), 15 tareas, 2 merges reales."
     }
   ]
 }
