@@ -10,14 +10,14 @@ Este taller lo tienes que hacer tú, a mano. No dejes que una IA te haga los com
 
 ## Qué vas a practicar
 
-15 tareas repartidas en **5 ramas** (`main` + 4 ramas `feature/*`):
+15 tareas repartidas en **8 ramas** (`main` + 7 ramas `feature/*`):
 
 - Crear ramas desde `main`.
-- Volver a la misma rama más adelante para agregar una tanda nueva de commits, con su propia palabra clave — no cada tarea necesita una rama distinta.
+- En algunas ramas (`feature/estructura`, `feature/estilos`, `feature/interactividad`, `feature/contacto-precios`), volver más adelante a la misma rama para agregar una tanda nueva de commits, con su propia palabra clave — no cada tarea necesita una rama distinta.
 - Escribir mensajes de commit que describan de verdad lo que hiciste (nada de "update" o "cambios"), y que además toquen el tipo de archivo que corresponde a esa parte del sitio.
 - **2 merges obligatorios** (`git merge --no-ff`) para integrar ramas en `main`.
 
-`feature/interactividad` y `feature/contenido` se quedan **sin mergear** a propósito — como una rama real que sigue en revisión.
+`feature/interactividad`, `feature/footer`, `feature/galeria`, `feature/testimonios` y `feature/contacto-precios` se quedan **sin mergear** a propósito — como ramas reales que siguen en revisión.
 
 ## Cómo funciona
 
